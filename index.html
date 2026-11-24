@@ -58,7 +58,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alert .five{color:#ffee00;font-weight:900;font-size:1.25em;text-shadow:0 0 6px #ffee00,0 0 14px #ffd000}.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
 .num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
 @keyframes kedip{50%{opacity:.15}}
-#lbl-col{position:relative}.sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;color:#1b2430;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);margin-top:2px;overflow:hidden}.sug div{padding:11px 14px;cursor:pointer;font-weight:600}.sug div+div{border-top:1px solid #eef1f5}.sug div:hover,.sug div:active{background:#eef4ff}
+#lbl-col,#lbl-veh{position:relative}.sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;color:#1b2430;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);margin-top:2px;overflow:hidden}.sug div{padding:11px 14px;cursor:pointer;font-weight:600}.sug div+div{border-top:1px solid #eef1f5}.sug div:hover,.sug div:active{background:#eef4ff}
 .alert .blink{animation:kedip 1s ease-in-out infinite}
 .alert:nth-of-type(10n+1) .blink{animation-delay:-0.87s}.alert:nth-of-type(10n+2) .blink{animation-delay:-0.24s}.alert:nth-of-type(10n+3) .blink{animation-delay:-0.61s}.alert:nth-of-type(10n+4) .blink{animation-delay:-0.98s}.alert:nth-of-type(10n+5) .blink{animation-delay:-0.35s}.alert:nth-of-type(10n+6) .blink{animation-delay:-0.72s}.alert:nth-of-type(10n+7) .blink{animation-delay:-0.09s}.alert:nth-of-type(10n+8) .blink{animation-delay:-0.46s}.alert:nth-of-type(10n+9) .blink{animation-delay:-0.83s}.alert:nth-of-type(10n+10) .blink{animation-delay:-0.20s}
 
@@ -105,7 +105,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     </select>
   </label>
   <label id="lbl-owner">Atas nama<input id="owner" maxlength="60" placeholder="Contoh: ARWANI MA'RUF"></label>
-  <label id="lbl-veh">Nama kendaraan<input id="veh" maxlength="40" placeholder="Contoh: VARIO (nama saja, tanpa motor/mobil)"></label>
+  <label id="lbl-veh">Nama kendaraan<input id="veh" maxlength="40" autocomplete="off" placeholder="Ketik huruf awal, mis. b → Beat"><div id="sug2" class="sug" hidden></div></label>
   <label id="lbl-col">Warna kendaraan<input id="col" maxlength="30" autocomplete="off" placeholder="Ketik huruf awal, mis. b → Biru"><div id="sug" class="sug" hidden></div></label>
   <label id="lbl-five">Tahun kendaraan<select id="five"></select></label>
   <label id="lbl-title" class="full">Judul agenda<input id="title" maxlength="80" placeholder="Contoh: Bayar asuransi rumah"></label>
@@ -216,7 +216,7 @@ function hint(){var c=$("cat").value,st=isStnk(c);
   if(!st&&$("pub").disabled)$("pub").checked=false;
   if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
 function cap(t){return String(t).trim().toLowerCase().replace(/(^|[\s-])(\S)/g,function(_,a,b){return a+b.toUpperCase()})}
-function vname(v){var t=String(v).replace(/\b(motor|mobil|honda|yamaha|suzuki|kawasaki|toyota|daihatsu|mitsubishi|nissan|mazda|wuling|hyundai|kia|datsun|vespa)\b/gi," ").replace(/\s+/g," ").trim();return(t||String(v).trim()).toUpperCase()}
+function vname(v){var t=String(v).replace(/\b(motor|mobil|honda|yamaha|suzuki|kawasaki|toyota|daihatsu|mitsubishi|nissan|mazda|wuling|hyundai|kia|datsun|vespa|isuzu|hino|ford|chevrolet|timor)\b/gi," ").replace(/\s+/g," ").trim();return(t||String(v).trim()).toUpperCase()}
 function stnkHtml(five,veh,col,own){var e=esc;
   return '<span class="j">HER STNK '+(five?'<span class="five">5</span> ':'')+'Tahunan</span> <span class="v">'+e(vname(veh))+(col?' '+e(cap(col)):'')+'</span> an. <span class="n blink">'+e(String(own).trim().toUpperCase())+'</span>'}
 function simHtml(own){return '<span class="j">HER SIM</span> an. <span class="n blink">'+esc(String(own).trim().toUpperCase())+'</span>'}
@@ -266,18 +266,22 @@ function buildDate(){
   setD(iso(today()))}
 var WARNA=["Putih","Hitam","Silver","Abu-Abu","Merah","Biru","Coklat","Hijau","Kuning","Orange","Krem","Emas","Ungu","Pink","Putih Mutiara","Hitam Doff","Biru Tua","Biru Muda","Biru Dongker","Merah Maroon","Merah Marun","Hijau Tua","Hijau Muda","Hijau Army","Coklat Tua","Abu-Abu Tua","Abu-Abu Metalik","Bulu Kera","Burgundy","Champagne","Titanium","Bronze","Gunmetal","Tosca","Beige","Turquoise","Cream"];
 function setCol(v){$("col").value=v}
-function sugCol(){var q=$("col").value.trim().toLowerCase(),box=$("sug"),a;
-  if(!q)a=WARNA.slice(0,8);
-  else{a=WARNA.filter(function(w){return w.toLowerCase().split(/[\s-]+/).some(function(x){return x.indexOf(q)===0})||w.toLowerCase().indexOf(q)===0});
-    a.sort(function(x,y){return(y.toLowerCase().indexOf(q)===0)-(x.toLowerCase().indexOf(q)===0)});a=a.slice(0,8)}
-  if(!a.length||(a.length===1&&a[0].toLowerCase()===q)){box.hidden=true;return}
-  box.innerHTML=a.map(function(w){return '<div role="option" data-w="'+esc(w)+'">'+esc(w)+'</div>'}).join("");box.hidden=false}
-(function(){var c=$("col"),box=$("sug"),t=0;
-  c.addEventListener("input",sugCol);
-  c.addEventListener("focus",function(){if(Date.now()-t>400)sugCol()});
+var KEND=["Beat","Vario","Scoopy","Spacy","Spicy","Avanza","Xenia","Veloz","Innova","Fortuner","Pajero","Pajero Sport","Creta","Xpander","Rush","Terios","Agya","Ayla","Calya","Sigra","Brio","Mobilio","HR-V","CR-V","Jazz","City","Civic","Freed","BR-V","WR-V","Ertiga","XL7","Carry","Grand Max","Luxio","APV","Baleno","Ignis","Swift","Raize","Rocky","Alphard","Camry","Yaris","Vios","Corolla","Hilux","Hiace","Kijang","Panther","Karimun","Triton","L300","Stargazer","Almaz","Confero","Cortez","Air EV","Ioniq","Kona","Palisade","Santa Fe","Seltos","Sportage","Picanto","Livina","Juke","X-Trail","Serena","March","Mazda 2","Mazda 3","CX-5","Ranger","Everest","D-Max","MU-X","Sirion","Datsun Go","Wagon R",
+ "Genio","PCX","ADV","Forza","CRF","Revo","Supra X","Blade","CB150R","CBR150R","Beat Street","Mio","Nmax","Aerox","Fino","Fazzio","Lexi","Gear","Freego","Jupiter","Vixion","R15","XSR","MX King","Satria","Smash","Address","Nex","Burgman","Gixxer","Ninja","KLX","Vespa","Sprint","Primavera","Tiger","Megapro","Verza","Karisma","Sonic","Win","Vega","Force","Fiz","Shogun","Thunder","Inazuma","Skywave",
+ "Classy","Zebra","Taruna","Taft","Feroza","Espass","Hijet","Gran Max","Charade","Ceria","Kijang Super","Kijang Kapsul","Kijang Grand","Kijang LGX","Kijang Innova","Rocky Hardtop","Escudo","Vitara","Katana","Jimny","Futura","Carry Futura","Esteem","Aerio","Neo Baleno","Forsa","Amenity","Corona","Starlet","Soluna","Crown","Land Cruiser","Hardtop","Hilux Pickup","Colt T120","Colt L300","Lancer","Galant","Kuda","Strada","Eterna","Grand Livina","Terrano","Evalia","Accord","Prestige","Stream","Odyssey","Maestro","Civic Genio","Elf","Panther Grand Touring","Timor","Escort","Mega Pro","Astrea","Astrea Grand","Astrea Prima","Legenda","Kharisma","Supra","GL Pro","CB100","RX King","Vega ZR","Jupiter Z","Force 1","Shogun Kebo","Thunder 125","Binter Merzy","Tornado","Crypton","F1ZR","Alfa","Kaze","Athlete","Boxer","Kriss","Rossi","Kirana","Scorpio","Byson","Tiger Revo","Verza","Winner","Sonic"];
+function mkSug(iid,bid,list){var c=$(iid),box=$(bid),t=0;
+  function show(){var q=c.value.trim().toLowerCase(),a;
+    if(!q)a=list.slice(0,8);
+    else{a=list.filter(function(w){var l=w.toLowerCase();return l.indexOf(q)===0||l.split(/[\s-]+/).some(function(x){return x.indexOf(q)===0})});
+      a.sort(function(x,y){return(y.toLowerCase().indexOf(q)===0)-(x.toLowerCase().indexOf(q)===0)});a=a.slice(0,8)}
+    if(!a.length||(a.length===1&&a[0].toLowerCase()===q)){box.hidden=true;return}
+    box.innerHTML=a.map(function(w){return '<div role="option" data-w="'+esc(w)+'">'+esc(w)+'</div>'}).join("");box.hidden=false}
+  c.addEventListener("input",show);
+  c.addEventListener("focus",function(){if(Date.now()-t>400)show()});
   c.addEventListener("blur",function(){setTimeout(function(){box.hidden=true},150)});
   box.addEventListener("pointerdown",function(e){var d=e.target.closest("[data-w]");if(!d)return;e.preventDefault();c.value=d.dataset.w;box.hidden=true;t=Date.now()});
-  box.addEventListener("click",function(e){e.preventDefault();e.stopPropagation()})})();
+  box.addEventListener("click",function(e){e.preventDefault();e.stopPropagation()})}
+mkSug("col","sug",WARNA);mkSug("veh","sug2",KEND);
 function setD(str){var p=str.split("-");
   if(!$("dy").querySelector('option[value="'+(+p[0])+'"]'))$("dy").appendChild(opt(+p[0],+p[0]));
   $("dd").value=+p[2];$("dm").value=+p[1];$("dy").value=+p[0]}
