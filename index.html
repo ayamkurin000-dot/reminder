@@ -75,6 +75,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     <select id="cat">
       <option value="stnk1">STNK tahunan</option>
       <option value="stnk5">STNK 5 tahunan</option>
+      <option value="sim">HER SIM (5 tahunan)</option>
       <option value="ultah">Ulang tahun</option>
       <option value="nikah">Ulang tahun pernikahan</option>
       <option value="lain">Lainnya (sekali saja)</option>
@@ -96,8 +97,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 <script>
 var KEY="agenda-penting-v1";
-var CAT={stnk1:{n:"STNK tahunan",step:1,mode:"renew"},stnk5:{n:"STNK 5 tahunan",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
-var HINT={stnk1:"Isi dengan tanggal batas pajak tahunan di STNK. Setelah diperpanjang, tekan tombol “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk5:"Isi dengan tanggal berakhirnya STNK 5 tahunan (ganti plat). Setelah diperpanjang, jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
+var CAT={stnk1:{n:"STNK tahunan",step:1,mode:"renew"},stnk5:{n:"STNK 5 tahunan",step:5,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
+var HINT={stnk1:"Isi dengan tanggal batas pajak tahunan di STNK. Setelah diperpanjang, tekan tombol “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk5:"Isi dengan tanggal berakhirnya STNK 5 tahunan (ganti plat). Setelah diperpanjang, jatuh tempo maju 5 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var items=[],editId=null;
 function $(i){return document.getElementById(i)}
