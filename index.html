@@ -85,7 +85,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <div id="alerts"></div>
 </section>
 
-<h2>Semua agenda</h2>
+<h2 id="h-all">Semua agenda</h2>
 <div id="list"></div>
 
 <h2 id="ftitle">Tambah agenda</h2>
@@ -134,7 +134,7 @@ function load(){try{var r=localStorage.getItem(KEY);if(r){items=norm(JSON.parse(
          {id:2,name:"Ulang tahun Ibu (contoh)",cat:"ultah",date:(y-55)+"-12-02",lead:14,note:""},
          {id:3,name:"HER STNK Avanza (contoh)",cat:"stnk",five:addDays(today(),200).getFullYear()-5,date:iso(addDays(today(),200)),lead:60,note:""}];}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
-var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXNxTWL9vR7NgsP110b_Tg_K6Ytag4q",sb=null;
+var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXNxTWL9vR7NgsP110b_Tg_K6Ytag4q",sb=null,ADMIN_EMAIL="ayamkurin000@gmail.com",isAdmin=false;
 function setSync(t){$("sync").textContent=t}
 function fail(e){setSync("Gagal menyimpan: "+(e&&e.message?e.message:"periksa koneksi")+".")}
 function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||"",publik:!!it.publik,owner:it.owner||"",vehicle:it.vehicle||"",color:it.color||"",five:it.five||0}}
@@ -144,7 +144,7 @@ function show(on){$("auth").hidden=on;$("app").hidden=!on}
 async function loadRows(){
   var r=await sb.from("agenda").select("*");
   if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=norm(JSON.parse(c));render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
-  items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync("Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
+  items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync(isAdmin?"Admin: menampilkan data semua pengguna.":"Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
 async function loadPublic(){
   var r=await sb.from("agenda").select("id,name,cat,date,lead,note").eq("publik",true);
   var box=$("pubalerts");
@@ -156,7 +156,7 @@ async function loadPublic(){
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
-  sb.auth.onAuthStateChange(function(ev,ses){if(ses){show(true);loadRows()}else{items=[];show(false);loadPublic()}});
+  sb.auth.onAuthStateChange(function(ev,ses){if(ses){isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);var h=$("h-all");if(h)h.textContent=isAdmin?"Semua agenda (semua pengguna · admin)":"Semua agenda";show(true);loadRows()}else{isAdmin=false;items=[];show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 $("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;$("aerr").textContent="";
   var r=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
