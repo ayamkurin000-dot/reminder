@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pengingat Agenda Penting</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#16202e;--mute:#5d6878;--line:#d9dde4;--navy:#1d3557;--navy-ink:#fff;--warn:#b86e00;--warnbg:#fff3d6;--bad:#b3261e;--badbg:#fde4e1;--ok:#23704f;--okbg:#e0f2ea;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--card:#19212d;--ink:#e8ecf2;--mute:#9aa5b5;--line:#2c3646;--navy:#0b1220;--navy-ink:#f1f4f9;--warn:#f0b24a;--warnbg:#3a2c10;--bad:#ff9189;--badbg:#3d1a18;--ok:#6fd2a4;--okbg:#14342a}}
+:root[data-theme="dark"]{--bg:#10151d;--card:#19212d;--ink:#e8ecf2;--mute:#9aa5b5;--line:#2c3646;--navy:#0b1220;--navy-ink:#f1f4f9;--warn:#f0b24a;--warnbg:#3a2c10;--bad:#ff9189;--badbg:#3d1a18;--ok:#6fd2a4;--okbg:#14342a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Source Sans 3",system-ui,sans-serif}
+h1,h2,.num{font-family:Archivo,system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+.hero{background:var(--navy);color:var(--navy-ink);border-radius:14px;padding:22px 20px;margin-bottom:20px}
+.hero h1{font-size:15px;font-weight:500;margin:0 0 12px;opacity:.8}
+.alert{display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px solid rgba(255,255,255,.18)}
+.alert:first-of-type{border-top:0;padding-top:0}
+.alert .num{font-size:34px;font-weight:800;line-height:1;min-width:76px}
+.alert .t{font-weight:600}.alert small{display:block;opacity:.75}
+.aman{margin:0;font-size:20px;font-family:Archivo;font-weight:700}
+h2{font-size:18px;margin:26px 0 10px}
+.item{background:var(--card);border:1px solid var(--line);border-left-width:6px;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.item.bad{border-left-color:var(--bad)}.item.warn{border-left-color:var(--warn)}.item.ok{border-left-color:var(--ok)}
+.item b{font-size:17px}.item .meta{color:var(--mute);font-size:14px}
+.badge{justify-self:end;align-self:start;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
+.bad .badge{background:var(--badbg);color:var(--bad)}.warn .badge{background:var(--warnbg);color:var(--warn)}.ok .badge{background:var(--okbg);color:var(--ok)}
+.acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px}
+button:hover{background:var(--bg)}
+button.pri{background:var(--navy);color:var(--navy-ink);border-color:var(--navy);font-weight:600}
+button.pri:hover{opacity:.9;background:var(--navy)}
+button.del{color:var(--bad)}
+:focus-visible{outline:3px solid #4c8dff;outline-offset:2px}
+form{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--mute);font-weight:600}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+.full{grid-column:1/-1}
+.hint{font-size:13px;color:var(--mute);margin:0}
+.empty{color:var(--mute);padding:16px;border:1px dashed var(--line);border-radius:10px}
+footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
+@media (max-width:520px){form{grid-template-columns:1fr}.alert .num{font-size:28px;min-width:62px}}
+#auth{max-width:420px;margin:40px auto}#auth form{grid-template-columns:1fr}.err{color:var(--bad);font-size:14px;margin:0;min-height:1.2em}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<main>
+<section id="auth" hidden>
+<h2>Masuk ke Pengingat Agenda</h2>
+<form id="af">
+  <label>Email<input id="em" type="email" required autocomplete="email"></label>
+  <label>Kata sandi (min. 6 karakter)<input id="pw" type="password" required minlength="6" autocomplete="current-password"></label>
+  <p class="err" id="aerr" role="alert"></p>
+  <div><button class="pri" type="submit">Masuk</button> <button type="button" id="signup">Daftar akun baru</button></div>
+</form>
+</section>
+<div id="app" hidden>
+<section class="hero" aria-live="polite">
+  <h1 id="today"></h1>
+  <div id="alerts"></div>
+</section>
+
+<h2>Semua agenda</h2>
+<div id="list"></div>
+
+<h2 id="ftitle">Tambah agenda</h2>
+<form id="f">
+  <label class="full">Nama agenda<input id="name" required maxlength="80" placeholder="Contoh: HER STNK Honda Vario B 1234 XYZ"></label>
+  <label>Jenis
+    <select id="cat">
+      <option value="stnk1">STNK tahunan</option>
+      <option value="stnk5">STNK 5 tahunan</option>
+      <option value="ultah">Ulang tahun</option>
+      <option value="nikah">Ulang tahun pernikahan</option>
+      <option value="lain">Lainnya (sekali saja)</option>
+    </select>
+  </label>
+  <label id="dlabel">Tanggal jatuh tempo<input id="date" type="date" required></label>
+  <label>Ingatkan sebelum
+    <select id="lead"><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="60">60 hari</option><option value="90">90 hari</option></select>
+  </label>
+  <label>Catatan (opsional)<input id="note" maxlength="120" placeholder="Contoh: bawa KTP asli dan BPKB"></label>
+  <p class="hint full" id="hint"></p>
+  <div class="full"><button class="pri" type="submit" id="save">Simpan agenda</button> <button type="button" id="cancel" hidden>Batal</button></div>
+</form>
+
+<footer><span id="sync">Memeriksa penyimpanan…</span> Buka halaman ini secara berkala untuk melihat pengumuman terbaru.</footer>
+<button id="logout">Keluar</button>
+</div>
+</main>
+
+<script>
+var KEY="agenda-penting-v1";
+var CAT={stnk1:{n:"STNK tahunan",step:1,mode:"renew"},stnk5:{n:"STNK 5 tahunan",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
+var HINT={stnk1:"Isi dengan tanggal batas pajak tahunan di STNK. Setelah diperpanjang, tekan tombol “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk5:"Isi dengan tanggal berakhirnya STNK 5 tahunan (ganti plat). Setelah diperpanjang, jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
+var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+var items=[],editId=null;
+function $(i){return document.getElementById(i)}
+function load(){try{var r=localStorage.getItem(KEY);if(r){items=JSON.parse(r);return}}catch(e){}
+  var y=new Date().getFullYear();
+  items=[{id:1,name:"HER STNK Honda Vario (contoh)",cat:"stnk1",date:iso(addDays(today(),12)),lead:30,note:"Bawa KTP asli dan BPKB"},
+         {id:2,name:"Ulang tahun Ibu (contoh)",cat:"ultah",date:(y-55)+"-12-02",lead:14,note:""},
+         {id:3,name:"STNK 5 tahunan Avanza (contoh)",cat:"stnk5",date:iso(addDays(today(),200)),lead:60,note:""}];}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
+var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXNxTWL9vR7NgsP110b_Tg_K6Ytag4q",sb=null;
+function setSync(t){$("sync").textContent=t}
+function fail(e){setSync("Gagal menyimpan: "+(e&&e.message?e.message:"periksa koneksi")+".")}
+function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||""}}
+function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){if(r.error)fail(r.error)})}
+function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
+function show(on){$("auth").hidden=on;$("app").hidden=!on}
+async function loadRows(){
+  var r=await sb.from("agenda").select("*");
+  if(r.error){fail(r.error);return}
+  items=r.data;render();setSync("Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
+async function initDb(){
+  if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
+  sb=supabase.createClient(SB_URL,SB_KEY);
+  sb.auth.onAuthStateChange(function(ev,ses){if(ses){show(true);loadRows()}else{items=[];show(false)}});
+  var r=await sb.auth.getSession();if(!r.data.session)show(false)}
+$("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;$("aerr").textContent="";
+  var r=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
+  if(r.error)$("aerr").textContent="Gagal masuk: "+r.error.message});
+$("signup").addEventListener("click",async function(){if(!sb)return;$("aerr").textContent="";
+  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value});
+  $("aerr").textContent=r.error?"Gagal daftar: "+r.error.message:(r.data.session?"":"Akun dibuat. Cek email untuk konfirmasi, lalu masuk.")});
+$("logout").addEventListener("click",function(){sb.auth.signOut()});
+function today(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+function addYears(s,n){var d=parse(s);return iso(new Date(d.getFullYear()+n,d.getMonth(),d.getDate()))}
+function fmt(d){return d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear()}
+function nextDate(it){var c=CAT[it.cat],d=parse(it.date),t=today();
+  if(c.mode==="auto"){var n=new Date(t.getFullYear(),d.getMonth(),d.getDate());if(n<t)n=new Date(t.getFullYear()+1,d.getMonth(),d.getDate());return n}
+  return d}
+function info(it){var n=nextDate(it),left=Math.round((n-today())/864e5),st="ok",txt;
+  if(left<0){st="bad";txt="Terlambat "+(-left)+" hari"}
+  else if(left===0){st="bad";txt="Hari ini"}
+  else{txt=left+" hari lagi";if(left<=7)st="bad";else if(left<=it.lead)st="warn"}
+  var extra="";if(CAT[it.cat].mode==="auto"){var age=n.getFullYear()-parse(it.date).getFullYear();extra=it.cat==="ultah"?" · ke-"+age:" · tahun ke-"+age}
+  return{date:n,left:left,st:st,txt:txt,extra:extra}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function render(){
+  $("today").textContent="Hari ini, "+fmt(today());
+  var rows=items.map(function(it){return{it:it,i:info(it)}}).sort(function(a,b){return a.i.left-b.i.left});
+  var al=rows.filter(function(r){return r.i.st!=="ok"});
+  $("alerts").innerHTML=al.length?al.map(function(r){
+    var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
+    return '<div class="alert"><div class="num">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+esc(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
+    :'<p class="aman">Tidak ada agenda yang perlu diurus sekarang.</p>';
+  $("list").innerHTML=rows.length?rows.map(function(r){var it=r.it,c=CAT[it.cat];
+    return '<div class="item '+r.i.st+'"><div><b>'+esc(it.name)+'</b><div class="meta">'+c.n+r.i.extra+' · '+fmt(r.i.date)+(it.note?'<br>'+esc(it.note):'')+'</div></div><span class="badge">'+r.i.txt+'</span><div class="acts">'
+    +(c.mode==="renew"?'<button class="pri" data-a="renew" data-id="'+it.id+'">Sudah diperpanjang (+'+c.step+' thn)</button>':'')
+    +'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div></div>'}).join("")
+    :'<div class="empty">Belum ada agenda. Tambahkan agenda pertama di formulir bawah.</div>';
+}
+$("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
+  if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);put(it);render()}
+  else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
+  else{editId=id;$("name").value=it.name;$("cat").value=it.cat;$("date").value=it.date;$("lead").value=it.lead;$("note").value=it.note||"";$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
+function hint(){var c=$("cat").value;$("hint").textContent=HINT[c];$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+function reset(){editId=null;$("f").reset();$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
+$("cat").addEventListener("change",hint);$("cancel").addEventListener("click",reset);
+$("f").addEventListener("submit",function(e){e.preventDefault();
+  var o={name:$("name").value.trim(),cat:$("cat").value,date:$("date").value,lead:+$("lead").value,note:$("note").value.trim()};
+  if(!o.name||!o.date)return;
+  var rec;
+  if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
+  else{o.id=Date.now();items.push(o);rec=o}
+  put(rec);reset();render()});
+load();hint();render();initDb();
+</script>
+</body>
+</html>
