@@ -55,6 +55,10 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 #auth{max-width:560px;margin:40px auto}#auth form{grid-template-columns:1fr}.err{color:var(--bad);font-size:14px;margin:0;min-height:1.2em}
 .dsel{display:flex;gap:6px}.dsel select:first-child{max-width:78px}.dsel select:nth-child(2){min-width:0}
 [hidden]{display:none!important}
+.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
+.num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
+@keyframes kedip{50%{opacity:.15}}
+@media (prefers-reduced-motion:reduce){.num.urg{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -144,7 +148,7 @@ async function loadPublic(){
   if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p>';return}
   var al=r.data.map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
   box.innerHTML=al.length?al.map(function(x){var n=x.i.left<0?"−"+(-x.i.left):x.i.left;
-    return '<div class="alert"><div class="num">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+esc(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
+    return '<div class="alert"><div class="num'+(x.i.left<=5?' urg':'')+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">Tidak ada pengumuman saat ini.</p>'}
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
@@ -180,7 +184,7 @@ function render(){
   var al=rows.filter(function(r){return r.i.st!=="ok"});
   $("alerts").innerHTML=al.length?al.map(function(r){
     var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
-    return '<div class="alert"><div class="num">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+esc(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
+    return '<div class="alert"><div class="num'+(r.i.left<=5?' urg':'')+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">Tidak ada agenda yang perlu diurus sekarang.</p>';
   $("list").innerHTML=rows.length?rows.map(function(r){var it=r.it,c=CAT[it.cat];
     return '<div class="item '+r.i.st+'"><div><b>'+esc(it.name)+'</b><div class="meta">'+c.n+r.i.extra+' · '+fmt(r.i.date)+(it.publik?' · 🌐 publik':'')+(it.note?'<br>'+esc(it.note):'')+'</div></div><span class="badge">'+r.i.txt+'</span><div class="acts">'
@@ -200,6 +204,14 @@ function hint(){var c=$("cat").value,st=(c==="stnk1"||c==="stnk5");
   $("lbl-owner").firstChild.textContent=c==="ultah"?"Nama yang berulang tahun":c==="nikah"?"Nama pasangan":"Atas nama";
   if(!st&&$("pub").disabled)$("pub").checked=false;
   if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+function rich(name){var m,e=esc;
+  if(m=name.match(/^(HER STNK (?:5 )?TAHUNAN) (.+) warna (.+) atas nama (.+)$/))
+    return '<span class="j">'+e(m[1])+'</span> <span class="v">'+e(m[2])+' warna '+e(m[3])+'</span> atas nama <span class="n">'+e(m[4])+'</span>';
+  if(m=name.match(/^(HER SIM) atas nama (.+)$/))
+    return '<span class="j">'+e(m[1])+'</span> atas nama <span class="n">'+e(m[2])+'</span>';
+  if(m=name.match(/^(Ulang tahun pernikahan|Ulang tahun) (.+)$/))
+    return '<span class="j">'+e(m[1])+'</span> <span class="n">'+e(m[2])+'</span>';
+  return e(name)}
 function buildName(o){var c=o.cat;
   if(c==="stnk1"||c==="stnk5")return "HER STNK "+(c==="stnk5"?"5 TAHUNAN":"TAHUNAN")+" "+o.vehicle+" warna "+o.color+" atas nama "+o.owner;
   if(c==="sim")return "HER SIM atas nama "+o.owner;
