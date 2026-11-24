@@ -45,6 +45,7 @@ input,select,textarea{background:var(--bg);border:1px solid var(--line);border-r
 footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @media (max-width:520px){form{grid-template-columns:1fr}.alert .num{font-size:28px;min-width:62px}}
 #auth{max-width:560px;margin:40px auto}#auth form{grid-template-columns:1fr}.err{color:var(--bad);font-size:14px;margin:0;min-height:1.2em}
+.dsel{display:flex;gap:6px}.dsel select:first-child{max-width:78px}.dsel select:nth-child(2){min-width:0}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -82,7 +83,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
       <option value="lain">Lainnya (sekali saja)</option>
     </select>
   </label>
-  <label id="dlabel">Tanggal jatuh tempo<input id="date" type="date" required></label>
+  <label id="dlabel">Tanggal jatuh tempo<span class="dsel"><select id="dd" aria-label="Tanggal"></select><select id="dm" aria-label="Bulan"></select><select id="dy" aria-label="Tahun"></select></span></label>
   <label>Ingatkan sebelum
     <select id="lead"><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="60">60 hari</option><option value="90">90 hari</option></select>
   </label>
@@ -174,18 +175,30 @@ function render(){
 $("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);put(it);render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
-  else{editId=id;$("name").value=it.name;$("cat").value=it.cat;$("date").value=it.date;$("lead").value=it.lead;$("note").value=it.note||"";$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
+  else{editId=id;$("name").value=it.name;$("cat").value=it.cat;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value;$("hint").textContent=HINT[c];$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
-function reset(){editId=null;$("f").reset();$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
+function reset(){editId=null;$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
 $("cat").addEventListener("change",hint);$("cancel").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
-  var o={name:$("name").value.trim(),cat:$("cat").value,date:$("date").value,lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
+  var o={name:$("name").value.trim(),cat:$("cat").value,date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
   if(!o.name||!o.date)return;
   var rec;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
   else{o.id=Date.now();items.push(o);rec=o}
   put(rec);reset();render()});
-load();hint();render();initDb();
+function opt(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;return o}
+function buildDate(){
+  var y=today().getFullYear(),i;
+  for(i=1;i<=31;i++)$("dd").appendChild(opt(i,i));
+  for(i=0;i<12;i++)$("dm").appendChild(opt(i+1,MON[i]));
+  for(i=y-100;i<=y+30;i++)$("dy").appendChild(opt(i,i));
+  setD(iso(today()))}
+function setD(str){var p=str.split("-");
+  if(!$("dy").querySelector('option[value="'+(+p[0])+'"]'))$("dy").appendChild(opt(+p[0],+p[0]));
+  $("dd").value=+p[2];$("dm").value=+p[1];$("dy").value=+p[0]}
+function getD(){var y=+$("dy").value,m=+$("dm").value,d=+$("dd").value,mx=new Date(y,m,0).getDate();
+  if(d>mx)d=mx;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
+buildDate();load();hint();render();initDb();
 </script>
 </body>
 </html>
