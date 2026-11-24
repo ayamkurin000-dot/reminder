@@ -126,7 +126,8 @@ var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan 
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var items=[],editId=null,keep=null;
 function $(i){return document.getElementById(i)}
-function load(){try{var r=localStorage.getItem(KEY);if(r){items=JSON.parse(r);return}}catch(e){}
+function norm(a){return(a||[]).map(function(x){if(x.cat==="stnk1"||x.cat==="stnk5")x.cat="stnk";if(!CAT[x.cat])x.cat="lain";return x})}
+function load(){try{var r=localStorage.getItem(KEY);if(r){items=norm(JSON.parse(r));return}}catch(e){}
   var y=new Date().getFullYear();
   items=[{id:1,name:"HER STNK Honda Vario (contoh)",cat:"stnk",five:y-3,date:iso(addDays(today(),12)),lead:30,note:"Bawa KTP asli dan BPKB"},
          {id:2,name:"Ulang tahun Ibu (contoh)",cat:"ultah",date:(y-55)+"-12-02",lead:14,note:""},
@@ -141,13 +142,13 @@ function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.err
 function show(on){$("auth").hidden=on;$("app").hidden=!on}
 async function loadRows(){
   var r=await sb.from("agenda").select("*");
-  if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=JSON.parse(c);render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
-  items=r.data;try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync("Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
+  if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=norm(JSON.parse(c));render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
+  items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync("Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
 async function loadPublic(){
   var r=await sb.from("agenda").select("id,name,cat,date,lead,note").eq("publik",true);
   var box=$("pubalerts");
   if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p>';return}
-  var al=r.data.map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
+  var al=norm(r.data).map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
   box.innerHTML=al.length?al.map(function(x){var n=x.i.left<0?"−"+(-x.i.left):x.i.left;
     return '<div class="alert"><div class="num'+(x.i.left<=5?' urg':'')+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">Tidak ada pengumuman saat ini.</p>'}
@@ -266,7 +267,7 @@ if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone){
   $("inst").hidden=false;$("insttxt").textContent="Di Safari, ketuk tombol Bagikan lalu pilih “Tambah ke Layar Utama”.";$("instbtn").hidden=true}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))
   window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){})});
-buildDate();load();hint();render();initDb();
+buildDate();load();hint();try{render()}catch(e){}initDb();
 </script>
 </body>
 </html>
