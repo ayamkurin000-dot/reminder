@@ -58,8 +58,11 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alert .five{color:#ffee00;font-weight:900;font-size:1.25em;text-shadow:0 0 6px #ffee00,0 0 14px #ffd000}.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
 .num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
 @keyframes kedip{50%{opacity:.15}}
+.alert .blink{animation:kedip 1s ease-in-out infinite}
+.alert:nth-of-type(10n+1) .blink{animation-delay:-0.87s}.alert:nth-of-type(10n+2) .blink{animation-delay:-0.24s}.alert:nth-of-type(10n+3) .blink{animation-delay:-0.61s}.alert:nth-of-type(10n+4) .blink{animation-delay:-0.98s}.alert:nth-of-type(10n+5) .blink{animation-delay:-0.35s}.alert:nth-of-type(10n+6) .blink{animation-delay:-0.72s}.alert:nth-of-type(10n+7) .blink{animation-delay:-0.09s}.alert:nth-of-type(10n+8) .blink{animation-delay:-0.46s}.alert:nth-of-type(10n+9) .blink{animation-delay:-0.83s}.alert:nth-of-type(10n+10) .blink{animation-delay:-0.20s}
+
 .alert:nth-of-type(10n+1) .num.urg{animation-delay:-0.37s}.alert:nth-of-type(10n+2) .num.urg{animation-delay:-0.74s}.alert:nth-of-type(10n+3) .num.urg{animation-delay:-0.11s}.alert:nth-of-type(10n+4) .num.urg{animation-delay:-0.48s}.alert:nth-of-type(10n+5) .num.urg{animation-delay:-0.85s}.alert:nth-of-type(10n+6) .num.urg{animation-delay:-0.22s}.alert:nth-of-type(10n+7) .num.urg{animation-delay:-0.59s}.alert:nth-of-type(10n+8) .num.urg{animation-delay:-0.96s}.alert:nth-of-type(10n+9) .num.urg{animation-delay:-0.33s}.alert:nth-of-type(10n+10) .num.urg{animation-delay:-0.70s}
-@media (prefers-reduced-motion:reduce){.num.urg{animation:none}}
+@media (prefers-reduced-motion:reduce){.num.urg,.alert .blink{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -101,8 +104,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     </select>
   </label>
   <label id="lbl-owner">Atas nama<input id="owner" maxlength="60" placeholder="Contoh: ARWANI MA'RUF"></label>
-  <label id="lbl-veh">Jenis kendaraan<input id="veh" maxlength="40" placeholder="Contoh: Motor VARIO"></label>
-  <label id="lbl-col">Warna kendaraan<input id="col" maxlength="30" placeholder="Contoh: Merah"></label>
+  <label id="lbl-veh">Nama kendaraan<input id="veh" maxlength="40" placeholder="Contoh: VARIO (nama saja, tanpa motor/mobil)"></label>
+  <label id="lbl-col">Warna kendaraan<select id="col"></select></label>
   <label id="lbl-five">Tahun kendaraan<select id="five"></select></label>
   <label id="lbl-title" class="full">Judul agenda<input id="title" maxlength="80" placeholder="Contoh: Bayar asuransi rumah"></label>
   <label id="dlabel">Tanggal jatuh tempo<span class="dsel"><select id="dd" aria-label="Tanggal"></select><select id="dm" aria-label="Bulan"></select><select id="dy" aria-label="Tahun"></select></span></label>
@@ -199,7 +202,7 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);if(it.cat==="stnk"&&it.vehicle)it.name=buildName(it);put(it);render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
   else{editId=id;var pr=parseName(it);
-    $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";$("col").value=it.color||pr.color||"";$("title").value=it.cat==="lain"?it.name:"";
+    $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";setCol(it.color||pr.color||"");$("title").value=it.cat==="lain"?it.name:"";
     var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:it.cat==="lain"?[]:[$("owner").value],loose=need.some(function(x){return!x});
     $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
@@ -212,30 +215,31 @@ function hint(){var c=$("cat").value,st=isStnk(c);
   if(!st&&$("pub").disabled)$("pub").checked=false;
   if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
 function cap(t){return String(t).trim().toLowerCase().replace(/(^|[\s-])(\S)/g,function(_,a,b){return a+b.toUpperCase()})}
+function vname(v){var t=String(v).replace(/\b(motor|mobil|honda|yamaha|suzuki|kawasaki|toyota|daihatsu|mitsubishi|nissan|mazda|wuling|hyundai|kia|datsun|vespa)\b/gi," ").replace(/\s+/g," ").trim();return(t||String(v).trim()).toUpperCase()}
 function stnkHtml(five,veh,col,own){var e=esc;
-  return '<span class="j">HER STNK '+(five?'<span class="five">5</span> ':'')+'tahunan</span> <span class="v">'+e(String(veh).toUpperCase())+(col?' '+e(cap(col)):'')+'</span> an. <span class="n">'+e(cap(own))+'</span>'}
+  return '<span class="j">HER STNK '+(five?'<span class="five">5</span> ':'')+'Tahunan</span> <span class="v">'+e(vname(veh))+(col?' '+e(cap(col)):'')+'</span> an. <span class="n blink">'+e(String(own).trim().toUpperCase())+'</span>'}
+function simHtml(own){return '<span class="j">HER SIM</span> an. <span class="n blink">'+esc(String(own).trim().toUpperCase())+'</span>'}
 function rich(name){var m,e=esc;
   if(m=name.match(/^HER STNK (5 )?tahunan (.+) an\. (.+)$/i)){var p=m[2].split(" "),c=p.length>1?p.pop():"";return stnkHtml(!!m[1],p.join(" "),c,m[3])}
   if(m=name.match(/^HER STNK (5 )?TAHUNAN (.+) warna (.+) atas nama (.+)$/i))return stnkHtml(!!m[1],m[2],m[3],m[4]);
-  if(m=name.match(/^(HER SIM) atas nama (.+)$/))
-    return '<span class="j">'+e(m[1])+'</span> atas nama <span class="n">'+e(m[2])+'</span>';
+  if(m=name.match(/^HER SIM (?:an\.|atas nama) (.+)$/i))return simHtml(m[1]);
   if(m=name.match(/^(Ulang tahun pernikahan|Ulang tahun) (.+)$/))
     return '<span class="j">'+e(m[1])+'</span> <span class="n">'+e(m[2])+'</span>';
   return e(name)}
 function parseName(it){var n=it.name||"",m,r={};
   if(m=n.match(/^HER STNK (?:5 TAHUNAN |TAHUNAN )?(.+?) warna (.+?) atas nama (.+)$/i)){r.vehicle=m[1];r.color=m[2];r.owner=m[3]}
   else if(m=n.match(/^HER STNK (?:5 )?tahunan (.+) an\. (.+)$/i)){var p=m[1].split(" ");r.color=p.length>1?p.pop():"";r.vehicle=p.join(" ");r.owner=m[2]}
-  else if(m=n.match(/^HER SIM atas nama (.+)$/i))r.owner=m[1];
+  else if(m=n.match(/^HER SIM (?:an\.|atas nama) (.+)$/i))r.owner=m[1];
   else if(m=n.match(/^Ulang tahun pernikahan (.+)$/i))r.owner=m[1];
   else if(m=n.match(/^Ulang tahun (.+)$/i))r.owner=m[1];
   return r}
 function sig(){return[$("cat").value,$("owner").value,$("veh").value,$("col").value,$("title").value,$("five").value].join("|")}
 function isStnk(c){return c==="stnk"}
-function jenisStnk(o){var y=parse(o.date).getFullYear();return o.five&&y>o.five&&(y-o.five)%5===0?"5 tahunan":"tahunan"}
+function jenisStnk(o){var y=parse(o.date).getFullYear();return o.five&&y>o.five&&(y-o.five)%5===0?"5 Tahunan":"Tahunan"}
 function lima(t){var y=today().getFullYear(),a=t+5*Math.max(1,Math.ceil((y-t)/5));return[a,a+5,a+10]}
 function buildName(o){var c=o.cat;
-  if(isStnk(c))return "HER STNK "+jenisStnk(o)+" "+o.vehicle.toUpperCase()+" "+cap(o.color)+" an. "+cap(o.owner);
-  if(c==="sim")return "HER SIM atas nama "+o.owner;
+  if(isStnk(c))return "HER STNK "+jenisStnk(o)+" "+vname(o.vehicle)+" "+cap(o.color)+" an. "+o.owner.trim().toUpperCase();
+  if(c==="sim")return "HER SIM an. "+o.owner.trim().toUpperCase();
   if(c==="ultah")return "Ulang tahun "+o.owner;
   return "Ulang tahun pernikahan "+o.owner}
 function reset(){editId=null;keep=null;$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;$("cancel2").hidden=true;hint()}
@@ -258,7 +262,9 @@ function buildDate(){
   for(i=0;i<12;i++)$("dm").appendChild(opt(i+1,MON[i]));
   for(i=y-100;i<=y+30;i++)$("dy").appendChild(opt(i,i));
   var f=$("five");f.appendChild(opt("","Pilih tahun"));for(i=y+1;i>=y-40;i--)f.appendChild(opt(i,i));
+  var cs=$("col");cs.appendChild(opt("","Pilih warna"));["Hitam","Putih","Silver","Abu-Abu","Merah","Maroon","Biru","Hijau","Kuning","Orange","Coklat","Krem","Emas","Ungu","Pink"].forEach(function(c){cs.appendChild(opt(c,c))});
   setD(iso(today()))}
+function setCol(v){var sl=$("col"),f=[].some.call(sl.options,function(o){return o.value===v});if(v&&!f)sl.appendChild(opt(v,v));sl.value=v}
 function setD(str){var p=str.split("-");
   if(!$("dy").querySelector('option[value="'+(+p[0])+'"]'))$("dy").appendChild(opt(+p[0],+p[0]));
   $("dd").value=+p[2];$("dm").value=+p[1];$("dy").value=+p[0]}
