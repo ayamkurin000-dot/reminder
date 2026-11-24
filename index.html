@@ -54,6 +54,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @media (max-width:520px){form{grid-template-columns:1fr}.alert .num{font-size:28px;min-width:62px}}
 #auth{max-width:560px;margin:40px auto}#auth form{grid-template-columns:1fr}.err{color:var(--bad);font-size:14px;margin:0;min-height:1.2em}
 .dsel{display:flex;gap:6px}.dsel select:first-child{max-width:78px}.dsel select:nth-child(2){min-width:0}
+[hidden]{display:none!important}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -84,17 +85,20 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 <h2 id="ftitle">Tambah agenda</h2>
 <form id="f">
-  <label class="full">Nama agenda<input id="name" required maxlength="80" placeholder="Contoh: HER STNK Honda Vario B 1234 XYZ"></label>
   <label>Jenis
     <select id="cat">
-      <option value="stnk1">STNK tahunan</option>
-      <option value="stnk5">STNK 5 tahunan</option>
+      <option value="stnk1">HER STNK tahunan</option>
+      <option value="stnk5">HER STNK 5 tahunan</option>
       <option value="sim">HER SIM (5 tahunan)</option>
       <option value="ultah">Ulang tahun</option>
       <option value="nikah">Ulang tahun pernikahan</option>
       <option value="lain">Lainnya (sekali saja)</option>
     </select>
   </label>
+  <label id="lbl-owner">Atas nama<input id="owner" maxlength="60" placeholder="Contoh: ARWANI MA'RUF"></label>
+  <label id="lbl-veh">Jenis kendaraan<input id="veh" maxlength="40" placeholder="Contoh: Motor VARIO"></label>
+  <label id="lbl-col">Warna kendaraan<input id="col" maxlength="30" placeholder="Contoh: Merah"></label>
+  <label id="lbl-title" class="full">Judul agenda<input id="title" maxlength="80" placeholder="Contoh: Bayar asuransi rumah"></label>
   <label id="dlabel">Tanggal jatuh tempo<span class="dsel"><select id="dd" aria-label="Tanggal"></select><select id="dm" aria-label="Bulan"></select><select id="dy" aria-label="Tahun"></select></span></label>
   <label>Ingatkan sebelum
     <select id="lead"><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="60">60 hari</option><option value="90">90 hari</option></select>
@@ -112,7 +116,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 <script>
 var KEY="agenda-penting-v1";
-var CAT={stnk1:{n:"STNK tahunan",step:1,mode:"renew"},stnk5:{n:"STNK 5 tahunan",step:5,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
+var CAT={stnk1:{n:"HER STNK tahunan",step:1,mode:"renew"},stnk5:{n:"HER STNK 5 tahunan",step:5,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
 var HINT={stnk1:"Isi dengan tanggal batas pajak tahunan di STNK. Setelah diperpanjang, tekan tombol “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk5:"Isi dengan tanggal berakhirnya STNK 5 tahunan (ganti plat). Setelah diperpanjang, jatuh tempo maju 5 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var items=[],editId=null;
@@ -126,7 +130,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
 var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXNxTWL9vR7NgsP110b_Tg_K6Ytag4q",sb=null;
 function setSync(t){$("sync").textContent=t}
 function fail(e){setSync("Gagal menyimpan: "+(e&&e.message?e.message:"periksa koneksi")+".")}
-function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||"",publik:!!it.publik}}
+function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||"",publik:!!it.publik,owner:it.owner||"",vehicle:it.vehicle||"",color:it.color||""}}
 function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){if(r.error)fail(r.error)})}
 function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
 function show(on){$("auth").hidden=on;$("app").hidden=!on}
@@ -187,12 +191,27 @@ function render(){
 $("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);put(it);render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
-  else{editId=id;$("name").value=it.name;$("cat").value=it.cat;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
-function hint(){var c=$("cat").value;$("hint").textContent=HINT[c];$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+  else{editId=id;$("owner").value=it.owner||"";$("veh").value=it.vehicle||"";$("col").value=it.color||"";$("title").value=it.cat==="lain"?it.name:"";$("cat").value=it.cat;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
+function hint(){var c=$("cat").value,st=(c==="stnk1"||c==="stnk5");
+  $("hint").textContent=HINT[c]+(st?" Agenda STNK otomatis tampil sebagai pengumuman publik.":"");
+  var ln=(c==="lain");
+  $("lbl-veh").hidden=!st;$("veh").required=st;$("lbl-col").hidden=!st;$("col").required=st;
+  $("lbl-title").hidden=!ln;$("title").required=ln;$("lbl-owner").hidden=ln;$("owner").required=!ln;
+  $("lbl-owner").firstChild.textContent=c==="ultah"?"Nama yang berulang tahun":c==="nikah"?"Nama pasangan":"Atas nama";
+  if(!st&&$("pub").disabled)$("pub").checked=false;
+  if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+function buildName(o){var c=o.cat;
+  if(c==="stnk1"||c==="stnk5")return "HER STNK "+(c==="stnk5"?"5 TAHUNAN":"TAHUNAN")+" "+o.vehicle+" warna "+o.color+" atas nama "+o.owner;
+  if(c==="sim")return "HER SIM atas nama "+o.owner;
+  if(c==="ultah")return "Ulang tahun "+o.owner;
+  return "Ulang tahun pernikahan "+o.owner}
 function reset(){editId=null;$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
 $("cat").addEventListener("change",hint);$("cancel").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
-  var o={name:$("name").value.trim(),cat:$("cat").value,date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
+  var c=$("cat").value,st=(c==="stnk1"||c==="stnk5"),o={cat:c,owner:$("owner").value.trim(),vehicle:$("veh").value.trim(),color:$("col").value.trim(),date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
+  if(c==="lain"){o.owner="";o.name=$("title").value.trim()}
+  if(!st){o.vehicle="";o.color=""}
+  if(c!=="lain")o.name=buildName(o);
   if(!o.name||!o.date)return;
   var rec;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
