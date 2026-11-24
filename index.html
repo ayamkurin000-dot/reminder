@@ -88,6 +88,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <div id="list"></div>
 
 <h2 id="ftitle">Tambah agenda</h2>
+<div style="margin:-4px 0 10px"><button type="button" id="cancel2" hidden>✕ Batal mengubah</button></div>
 <form id="f">
   <label>Jenis
     <select id="cat">
@@ -199,7 +200,7 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
     $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";$("col").value=it.color||pr.color||"";$("title").value=it.cat==="lain"?it.name:"";
     var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:it.cat==="lain"?[]:[$("owner").value],loose=need.some(function(x){return!x});
     if(legacy&&!$("cat").querySelector('option[value="'+cc+'"]'))$("cat").appendChild(opt(cc,cc==="stnk5"?"HER STNK 5 tahunan (lama)":"HER STNK tahunan (lama)"));
-    $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("f").scrollIntoView({behavior:"smooth"})}});
+    $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
   $("hint").textContent=HINT[c]+(st?" Agenda STNK otomatis tampil sebagai pengumuman publik.":"")+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
   var ln=(c==="lain"),lo=!!(keep&&keep.loose&&keep.cat===c);
@@ -232,8 +233,8 @@ function buildName(o){var c=o.cat;
   if(c==="sim")return "HER SIM atas nama "+o.owner;
   if(c==="ultah")return "Ulang tahun "+o.owner;
   return "Ulang tahun pernikahan "+o.owner}
-function reset(){editId=null;keep=null;["stnk1","stnk5"].forEach(function(v){var x=$("cat").querySelector('option[value="'+v+'"]');if(x)x.remove()});$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
-$("cat").addEventListener("change",hint);$("five").addEventListener("change",hint);$("cancel").addEventListener("click",reset);
+function reset(){editId=null;keep=null;["stnk1","stnk5"].forEach(function(v){var x=$("cat").querySelector('option[value="'+v+'"]');if(x)x.remove()});$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;$("cancel2").hidden=true;hint()}
+$("cat").addEventListener("change",hint);$("five").addEventListener("change",hint);$("cancel").addEventListener("click",reset);$("cancel2").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
   var c=$("cat").value,st=isStnk(c),o={cat:c,five:c==="stnk"?(+$("five").value||0):0,owner:$("owner").value.trim(),vehicle:$("veh").value.trim(),color:$("col").value.trim(),date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
   if(c==="lain"){o.owner="";o.name=$("title").value.trim()}
