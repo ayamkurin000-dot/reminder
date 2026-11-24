@@ -58,6 +58,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alert .five{color:#ffee00;font-weight:900;font-size:1.25em;text-shadow:0 0 6px #ffee00,0 0 14px #ffd000}.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
 .num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
 @keyframes kedip{50%{opacity:.15}}
+#lbl-col{position:relative}.sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;color:#1b2430;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);margin-top:2px;overflow:hidden}.sug div{padding:11px 14px;cursor:pointer;font-weight:600}.sug div+div{border-top:1px solid #eef1f5}.sug div:hover,.sug div:active{background:#eef4ff}
 .alert .blink{animation:kedip 1s ease-in-out infinite}
 .alert:nth-of-type(10n+1) .blink{animation-delay:-0.87s}.alert:nth-of-type(10n+2) .blink{animation-delay:-0.24s}.alert:nth-of-type(10n+3) .blink{animation-delay:-0.61s}.alert:nth-of-type(10n+4) .blink{animation-delay:-0.98s}.alert:nth-of-type(10n+5) .blink{animation-delay:-0.35s}.alert:nth-of-type(10n+6) .blink{animation-delay:-0.72s}.alert:nth-of-type(10n+7) .blink{animation-delay:-0.09s}.alert:nth-of-type(10n+8) .blink{animation-delay:-0.46s}.alert:nth-of-type(10n+9) .blink{animation-delay:-0.83s}.alert:nth-of-type(10n+10) .blink{animation-delay:-0.20s}
 
@@ -105,7 +106,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   </label>
   <label id="lbl-owner">Atas nama<input id="owner" maxlength="60" placeholder="Contoh: ARWANI MA'RUF"></label>
   <label id="lbl-veh">Nama kendaraan<input id="veh" maxlength="40" placeholder="Contoh: VARIO (nama saja, tanpa motor/mobil)"></label>
-  <label id="lbl-col">Warna kendaraan<select id="col"></select></label>
+  <label id="lbl-col">Warna kendaraan<input id="col" maxlength="30" autocomplete="off" placeholder="Ketik huruf awal, mis. b → Biru"><div id="sug" class="sug" hidden></div></label>
   <label id="lbl-five">Tahun kendaraan<select id="five"></select></label>
   <label id="lbl-title" class="full">Judul agenda<input id="title" maxlength="80" placeholder="Contoh: Bayar asuransi rumah"></label>
   <label id="dlabel">Tanggal jatuh tempo<span class="dsel"><select id="dd" aria-label="Tanggal"></select><select id="dm" aria-label="Bulan"></select><select id="dy" aria-label="Tahun"></select></span></label>
@@ -262,9 +263,21 @@ function buildDate(){
   for(i=0;i<12;i++)$("dm").appendChild(opt(i+1,MON[i]));
   for(i=y-100;i<=y+30;i++)$("dy").appendChild(opt(i,i));
   var f=$("five");f.appendChild(opt("","Pilih tahun"));for(i=y+1;i>=y-40;i--)f.appendChild(opt(i,i));
-  var cs=$("col");cs.appendChild(opt("","Pilih warna"));["Hitam","Putih","Silver","Abu-Abu","Merah","Maroon","Biru","Hijau","Kuning","Orange","Coklat","Krem","Emas","Ungu","Pink"].forEach(function(c){cs.appendChild(opt(c,c))});
   setD(iso(today()))}
-function setCol(v){var sl=$("col"),f=[].some.call(sl.options,function(o){return o.value===v});if(v&&!f)sl.appendChild(opt(v,v));sl.value=v}
+var WARNA=["Putih","Hitam","Silver","Abu-Abu","Merah","Biru","Coklat","Hijau","Kuning","Orange","Krem","Emas","Ungu","Pink","Putih Mutiara","Hitam Doff","Biru Tua","Biru Muda","Biru Dongker","Merah Maroon","Merah Marun","Hijau Tua","Hijau Muda","Hijau Army","Coklat Tua","Abu-Abu Tua","Abu-Abu Metalik","Bulu Kera","Burgundy","Champagne","Titanium","Bronze","Gunmetal","Tosca","Beige","Turquoise","Cream"];
+function setCol(v){$("col").value=v}
+function sugCol(){var q=$("col").value.trim().toLowerCase(),box=$("sug"),a;
+  if(!q)a=WARNA.slice(0,8);
+  else{a=WARNA.filter(function(w){return w.toLowerCase().split(/[\s-]+/).some(function(x){return x.indexOf(q)===0})||w.toLowerCase().indexOf(q)===0});
+    a.sort(function(x,y){return(y.toLowerCase().indexOf(q)===0)-(x.toLowerCase().indexOf(q)===0)});a=a.slice(0,8)}
+  if(!a.length||(a.length===1&&a[0].toLowerCase()===q)){box.hidden=true;return}
+  box.innerHTML=a.map(function(w){return '<div role="option" data-w="'+esc(w)+'">'+esc(w)+'</div>'}).join("");box.hidden=false}
+(function(){var c=$("col"),box=$("sug"),t=0;
+  c.addEventListener("input",sugCol);
+  c.addEventListener("focus",function(){if(Date.now()-t>400)sugCol()});
+  c.addEventListener("blur",function(){setTimeout(function(){box.hidden=true},150)});
+  box.addEventListener("pointerdown",function(e){var d=e.target.closest("[data-w]");if(!d)return;e.preventDefault();c.value=d.dataset.w;box.hidden=true;t=Date.now()});
+  box.addEventListener("click",function(e){e.preventDefault();e.stopPropagation()})})();
 function setD(str){var p=str.split("-");
   if(!$("dy").querySelector('option[value="'+(+p[0])+'"]'))$("dy").appendChild(opt(+p[0],+p[0]));
   $("dd").value=+p[2];$("dm").value=+p[1];$("dy").value=+p[0]}
