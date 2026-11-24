@@ -123,7 +123,7 @@ var KEY="agenda-penting-v1";
 var CAT={stnk1:{n:"HER STNK tahunan",step:1,mode:"renew"},stnk:{n:"HER STNK",step:1,mode:"renew"},stnk5:{n:"HER STNK 5 tahunan",step:5,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
 var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan (tahun pertama STNK terbit). Aplikasi otomatis menulis HER STNK TAHUNAN atau 5 TAHUNAN: setiap kelipatan 5 tahun dari tahun kendaraan. Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk1:"Isi dengan tanggal batas pajak tahunan di STNK. Setelah diperpanjang, tekan tombol “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",stnk5:"Isi dengan tanggal berakhirnya STNK 5 tahunan (ganti plat). Setelah diperpanjang, jatuh tempo maju 5 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-var items=[],editId=null;
+var items=[],editId=null,keep=null;
 function $(i){return document.getElementById(i)}
 function load(){try{var r=localStorage.getItem(KEY);if(r){items=JSON.parse(r);return}}catch(e){}
   var y=new Date().getFullYear();
@@ -195,14 +195,17 @@ function render(){
 $("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);if(it.cat==="stnk"&&it.vehicle)it.name=buildName(it);put(it);render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
-  else{editId=id;$("owner").value=it.owner||"";$("veh").value=it.vehicle||"";$("col").value=it.color||"";$("title").value=it.cat==="lain"?it.name:"";var cc=(it.cat==="stnk1"||it.cat==="stnk5")?"stnk":it.cat,fy=it.five||"";
-    $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;hint();$("f").scrollIntoView({behavior:"smooth"})}});
+  else{editId=id;var pr=parseName(it),legacy=(it.cat==="stnk1"||it.cat==="stnk5");
+    $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";$("col").value=it.color||pr.color||"";$("title").value=it.cat==="lain"?it.name:"";
+    var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:it.cat==="lain"?[]:[$("owner").value],loose=need.some(function(x){return!x});
+    if(legacy&&!$("cat").querySelector('option[value="'+cc+'"]'))$("cat").appendChild(opt(cc,cc==="stnk5"?"HER STNK 5 tahunan (lama)":"HER STNK tahunan (lama)"));
+    $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("f").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
   $("hint").textContent=HINT[c]+(st?" Agenda STNK otomatis tampil sebagai pengumuman publik.":"")+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
-  var ln=(c==="lain");
-  $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk";
-  $("lbl-veh").hidden=!st;$("veh").required=st;$("lbl-col").hidden=!st;$("col").required=st;
-  $("lbl-title").hidden=!ln;$("title").required=ln;$("lbl-owner").hidden=ln;$("owner").required=!ln;
+  var ln=(c==="lain"),lo=!!(keep&&keep.loose&&keep.cat===c);
+  $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk"&&!lo;
+  $("lbl-veh").hidden=!st;$("veh").required=st&&!lo;$("lbl-col").hidden=!st;$("col").required=st&&!lo;
+  $("lbl-title").hidden=!ln;$("title").required=ln&&!lo;$("lbl-owner").hidden=ln;$("owner").required=!ln&&!lo;
   $("lbl-owner").firstChild.textContent=c==="ultah"?"Nama yang berulang tahun":c==="nikah"?"Nama pasangan":"Atas nama";
   if(!st&&$("pub").disabled)$("pub").checked=false;
   if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
@@ -214,6 +217,13 @@ function rich(name){var m,e=esc;
   if(m=name.match(/^(Ulang tahun pernikahan|Ulang tahun) (.+)$/))
     return '<span class="j">'+e(m[1])+'</span> <span class="n">'+e(m[2])+'</span>';
   return e(name)}
+function parseName(it){var n=it.name||"",m,r={};
+  if(m=n.match(/^HER STNK (?:5 TAHUNAN |TAHUNAN )?(.+?) warna (.+?) atas nama (.+)$/i)){r.vehicle=m[1];r.color=m[2];r.owner=m[3]}
+  else if(m=n.match(/^HER SIM atas nama (.+)$/i))r.owner=m[1];
+  else if(m=n.match(/^Ulang tahun pernikahan (.+)$/i))r.owner=m[1];
+  else if(m=n.match(/^Ulang tahun (.+)$/i))r.owner=m[1];
+  return r}
+function sig(){return[$("cat").value,$("owner").value,$("veh").value,$("col").value,$("title").value,$("five").value].join("|")}
 function isStnk(c){return c==="stnk"||c==="stnk1"||c==="stnk5"}
 function jenisStnk(o){var y=parse(o.date).getFullYear();return o.five&&y>o.five&&(y-o.five)%5===0?"5 TAHUNAN":"TAHUNAN"}
 function lima(t){var y=today().getFullYear(),a=t+5*Math.max(1,Math.ceil((y-t)/5));return[a,a+5,a+10]}
@@ -222,13 +232,14 @@ function buildName(o){var c=o.cat;
   if(c==="sim")return "HER SIM atas nama "+o.owner;
   if(c==="ultah")return "Ulang tahun "+o.owner;
   return "Ulang tahun pernikahan "+o.owner}
-function reset(){editId=null;$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
+function reset(){editId=null;keep=null;["stnk1","stnk5"].forEach(function(v){var x=$("cat").querySelector('option[value="'+v+'"]');if(x)x.remove()});$("f").reset();setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;hint()}
 $("cat").addEventListener("change",hint);$("five").addEventListener("change",hint);$("cancel").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
   var c=$("cat").value,st=isStnk(c),o={cat:c,five:c==="stnk"?(+$("five").value||0):0,owner:$("owner").value.trim(),vehicle:$("veh").value.trim(),color:$("col").value.trim(),date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
   if(c==="lain"){o.owner="";o.name=$("title").value.trim()}
   if(!st){o.vehicle="";o.color=""}
   if(c!=="lain")o.name=buildName(o);
+  if(keep&&keep.loose&&keep.cat===c&&sig()===keep.sig)o.name=keep.name;
   if(!o.name||!o.date)return;
   var rec;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
