@@ -141,6 +141,10 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .pcap{text-align:center;margin:6px 0 8px}
 .prow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .pzoom{width:100%;max-width:260px;margin-top:10px}.pzoom input{padding:0}
+.err.hot{color:#ff1f1f;font-weight:800;font-size:17px;letter-spacing:.3px;text-shadow:0 0 6px #ff4d4d,0 0 14px rgba(255,60,60,.8);animation:errgoyang .5s ease-in-out infinite,errnyala 1s ease-in-out infinite;transform-origin:left center}
+@keyframes errgoyang{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px) rotate(-1.5deg)}40%{transform:translateX(6px) rotate(1.5deg)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes errnyala{0%,100%{text-shadow:0 0 4px #ff4d4d,0 0 10px rgba(255,60,60,.6);color:#ff1f1f}50%{text-shadow:0 0 10px #ff8a00,0 0 24px #ff3b3b;color:#ff5a00}}
+@media (prefers-reduced-motion:reduce){.err.hot{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -326,16 +330,17 @@ async function initDb(){
   sb=supabase.createClient(SB_URL,SB_KEY);
   sb.auth.onAuthStateChange(function(ev,ses){if(ses){isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
+function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
 function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
 $("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
 $("backlogin").addEventListener("click",function(){setReg(false)});
-async function doSignup(){if(!sb)return;$("aerr").textContent="";
+async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").className="err";
   if(!$("em").value||!$("em").checkValidity()){$("aerr").textContent="Isi email dengan benar.";return}
   if($("pw").value.length<6){$("aerr").textContent="Kata sandi minimal 6 karakter.";return}
   if($("pw").value!==$("pw2").value){$("aerr").textContent="Kata sandi dan ulangannya tidak sama. Periksa lagi.";return}
   var nm=$("nama").value.trim().replace(/\s+/g," ");
-  if(nm.length<3){$("aerr").textContent="Isi nama lengkap (minimal 3 huruf).";return}
+  if(nm.length<3){hot($("aerr"),"Isi Nama Lengkap !!!");$("nama").focus();return}
   if(!$("jk").value){$("aerr").textContent="Pilih jenis kelamin.";return}
   var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
@@ -391,8 +396,8 @@ function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidde
 function closeProf(){if(PMAND)return;$("pmodal").hidden=true}
 function exportFoto(){var o=document.createElement("canvas");o.width=o.height=256;var c=o.getContext("2d"),f=256/(2*R),s=E.base*E.z*f;
   c.fillStyle="#fff";c.fillRect(0,0,256,256);c.translate(128+E.x*f,128+E.y*f);c.rotate(E.rot*Math.PI/180);c.scale(s,s);c.drawImage(E.img,-E.img.width/2,-E.img.height/2);return o.toDataURL("image/jpeg",.85)}
-async function saveProf(){var nm=$("pnamaIn").value.trim().replace(/\s+/g," "),jk=$("pjk").value,er=$("perr");er.textContent="";
-  if(nm.length<3){er.textContent="Isi nama lengkap (minimal 3 huruf).";return}
+async function saveProf(){var nm=$("pnamaIn").value.trim().replace(/\s+/g," "),jk=$("pjk").value,er=$("perr");er.textContent="";er.className="err";
+  if(nm.length<3){hot(er,"Isi Nama Lengkap !!!");$("pnamaIn").focus();return}
   if(!jk){er.textContent="Pilih jenis kelamin.";return}
   $("psave").disabled=true;$("psave").textContent="Menyimpan…";
   var foto=E.img?(E.dirty||!PROF.foto?exportFoto():PROF.foto):"",msg="";
