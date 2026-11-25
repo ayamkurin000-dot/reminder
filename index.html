@@ -127,6 +127,20 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @keyframes lonceng{0%,40%,100%{transform:rotate(0)}4%{transform:rotate(18deg)}9%{transform:rotate(-16deg)}14%{transform:rotate(13deg)}19%{transform:rotate(-10deg)}24%{transform:rotate(6deg)}29%{transform:rotate(-3deg)}34%{transform:rotate(0)}}
 @keyframes titik{0%,40%,100%{transform:scale(1)}8%{transform:scale(1.5)}16%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.bell svg,.bell .bdot{animation:none}}
+.prof{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+.prof .pinfo{flex:1;min-width:0}.prof .pinfo b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prof .pinfo small{display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avbtn{position:relative;padding:0;border:0;border-radius:50%;width:56px;height:56px;flex:none;background:none}
+.avbtn img{width:56px;height:56px;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--line)}
+.avedit{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:var(--navy);color:var(--navy-ink);font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)}
+.pmodal{position:fixed;inset:0;z-index:100;background:rgba(10,15,25,.6);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
+.pmodal[hidden]{display:none}
+.pbox{background:var(--card);color:var(--ink);border-radius:14px;padding:18px;width:100%;max-width:420px;margin:auto}
+.pfoto{display:flex;flex-direction:column;align-items:center}
+#pcv{width:100%;max-width:260px;aspect-ratio:1;border-radius:12px;touch-action:none;cursor:grab;background:#e2e8f0}
+#pcv:active{cursor:grabbing}
+.pcap{text-align:center;margin:6px 0 8px}
+.prow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pzoom{width:100%;max-width:260px;margin-top:10px}.pzoom input{padding:0}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -160,6 +174,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <p id="gtag" class="meta" hidden style="margin:-6px 0 10px;color:var(--mute)"></p>
 <form id="af">
   <label>Email<input id="em" type="email" required autocomplete="email"></label>
+  <label id="lbl-nama" hidden>Nama lengkap<input id="nama" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ahmad Fauzi"></label>
+  <label id="lbl-jk" hidden>Jenis kelamin (untuk foto profil bawaan)<select id="jk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
   <label>Kata sandi (min. 6 karakter)<input id="pw" type="password" required minlength="6" autocomplete="current-password"></label>
   <label id="lbl-pw2" hidden>Ulangi kata sandi<input id="pw2" type="password" minlength="6" autocomplete="new-password"></label>
   <label class="cek" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="showpw" style="width:auto"> Tampilkan kata sandi</label>
@@ -168,6 +184,11 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 </form>
 </section>
 <div id="app" hidden>
+<div id="prof" class="prof">
+  <button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button>
+  <div class="pinfo"><b id="pnama"></b><small id="pemail"></small></div>
+  <button type="button" id="pedit">Ubah profil</button>
+</div>
 <section class="hero" aria-live="polite">
   <h1 id="today"></h1>
   <div id="alerts"></div>
@@ -209,6 +230,29 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 <footer><span id="sync">Memeriksa penyimpanan…</span> Buka halaman ini secara berkala untuk melihat pengumuman terbaru.</footer>
 <button id="logout">Keluar</button>
+</div>
+<div id="pmodal" class="pmodal" hidden role="dialog" aria-modal="true" aria-labelledby="pttl">
+  <div class="pbox">
+    <h2 id="pttl" style="margin:0 0 4px">Profil kamu</h2>
+    <p id="psub" class="meta" style="margin:0 0 12px"></p>
+    <label>Nama lengkap<input id="pnamaIn" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ahmad Fauzi"></label>
+    <label style="margin-top:10px">Jenis kelamin (menentukan foto bawaan)<select id="pjk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+    <div class="pfoto">
+      <div class="meta" style="margin:12px 0 6px;font-weight:600">Foto profil</div>
+      <canvas id="pcv" width="260" height="260" aria-label="Pratinjau foto profil, geser untuk memilih area"></canvas>
+      <div class="meta pcap" id="pcap">Foto bawaan. Pilih foto untuk menggantinya.</div>
+      <div class="prow">
+        <button type="button" id="pfile" class="pri">📷 Pilih foto</button>
+        <button type="button" id="protl" aria-label="Putar ke kiri" title="Putar ke kiri">⟲</button>
+        <button type="button" id="protr" aria-label="Putar ke kanan" title="Putar ke kanan">⟳</button>
+        <button type="button" id="pdel">Pakai foto bawaan</button>
+      </div>
+      <label class="pzoom">Perbesar / perkecil<input id="pzoom" type="range" min="100" max="400" value="100"></label>
+      <input id="pinp" type="file" accept="image/*" hidden>
+    </div>
+    <p class="err" id="perr" role="alert"></p>
+    <div class="prow" style="margin-top:6px"><button type="button" class="pri" id="psave">Simpan</button><button type="button" id="pcancel">Batal</button></div>
+  </div>
 </div>
 </main>
 
@@ -280,17 +324,20 @@ async function loadPublic(){
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
-  sb.auth.onAuthStateChange(function(ev,ses){if(ses){isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows()}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];show(false);loadPublic()}});
+  sb.auth.onAuthStateChange(function(ev,ses){if(ses){isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 var regMode=false;
-function setReg(on){regMode=on;$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
+function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
 $("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
 $("backlogin").addEventListener("click",function(){setReg(false)});
 async function doSignup(){if(!sb)return;$("aerr").textContent="";
   if(!$("em").value||!$("em").checkValidity()){$("aerr").textContent="Isi email dengan benar.";return}
   if($("pw").value.length<6){$("aerr").textContent="Kata sandi minimal 6 karakter.";return}
   if($("pw").value!==$("pw2").value){$("aerr").textContent="Kata sandi dan ulangannya tidak sama. Periksa lagi.";return}
-  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup()}}});
+  var nm=$("nama").value.trim().replace(/\s+/g," ");
+  if(nm.length<3){$("aerr").textContent="Isi nama lengkap (minimal 3 huruf).";return}
+  if(!$("jk").value){$("aerr").textContent="Pilih jenis kelamin.";return}
+  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
   if(!r.data.session){$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk.";setReg(false);$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk."}}
 $("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;
@@ -305,6 +352,80 @@ document.addEventListener("click",function(e){var c=e.target.closest("[data-copy
 $("folders").addEventListener("click",function(e){if(e.target.closest("[data-copy],[data-copyall]"))return;var b=e.target.closest("[data-g]");if(!b)return;openG=b.dataset.g;if(editId===null)$("grp").value=openG;render();window.scrollTo({top:0,behavior:"smooth"})});
 $("fback").addEventListener("click",function(){openG=null;render()});
 $("logout").addEventListener("click",function(){sb.auth.signOut()});
+/* ===== Profil: nama lengkap + foto (crop, putar, geser) ===== */
+var PROF={nama:"",jk:"",foto:"",uid:""},PMAND=false;
+function svgUri(x){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e2e8f0"/>'+x+'</svg>')}
+var AV_L=svgUri('<circle cx="50" cy="37" r="17" fill="#94a3b8"/><path d="M15 100c0-25 15-37 35-37s35 12 35 37z" fill="#94a3b8"/>');
+var AV_P=svgUri('<path d="M50 13c-18 0-27 12-27 29 0 8 2 14 5 19-9 4-15 13-15 39h74c0-26-6-35-15-39 3-5 5-11 5-19 0-17-9-29-27-29z" fill="#64748b"/><ellipse cx="50" cy="44" rx="14" ry="17" fill="#cbd5e1"/>');
+function avDef(jk){return jk==="P"?AV_P:AV_L}
+function avSrc(){return PROF.foto||avDef(PROF.jk)}
+function paintProf(){$("avimg").src=avSrc();$("pnama").textContent=PROF.nama||"(nama belum diisi)";
+  var u=$("pemail");u.textContent=PROF.email||""}
+function fotoKey(){return"foto-"+PROF.uid}
+async function loadProfil(user){var m=user.user_metadata||{};
+  PROF={nama:m.nama||"",jk:m.jk||"",foto:"",uid:user.id,email:user.email||""};
+  try{PROF.foto=localStorage.getItem(fotoKey())||""}catch(e){}
+  paintProf();
+  var r=await sb.from("profil").select("foto").eq("user_id",user.id).maybeSingle();
+  if(!r.error&&r.data&&r.data.foto){PROF.foto=r.data.foto;paintProf()}
+  if(!PROF.nama||!PROF.jk)openProf(true)}
+var E={img:null,rot:0,z:1,base:1,x:0,y:0,dirty:false},C=260,R=120,defImg=new Image(),ptr={};
+function cv(){return $("pcv")}
+function draw(){var c=cv().getContext("2d");c.clearRect(0,0,C,C);c.fillStyle="#e2e8f0";c.fillRect(0,0,C,C);
+  if(E.img){c.save();c.translate(C/2+E.x,C/2+E.y);c.rotate(E.rot*Math.PI/180);var s=E.base*E.z;c.scale(s,s);c.drawImage(E.img,-E.img.width/2,-E.img.height/2);c.restore()}
+  else if(defImg.complete)c.drawImage(defImg,C/2-R,C/2-R,2*R,2*R);
+  c.save();c.fillStyle="rgba(15,23,42,.55)";c.beginPath();c.rect(0,0,C,C);c.arc(C/2,C/2,R,0,Math.PI*2,true);c.fill("evenodd");c.restore();
+  c.strokeStyle="#fff";c.lineWidth=2;c.beginPath();c.arc(C/2,C/2,R,0,Math.PI*2);c.stroke()}
+function clampE(){if(!E.img)return;var s=E.base*E.z,sw=E.rot%180===0,hw=(sw?E.img.width:E.img.height)*s/2,hh=(sw?E.img.height:E.img.width)*s/2,mx=Math.max(0,hw-R),my=Math.max(0,hh-R);
+  E.x=Math.max(-mx,Math.min(mx,E.x));E.y=Math.max(-my,Math.min(my,E.y))}
+function setZ(z){E.z=Math.max(1,Math.min(4,z));$("pzoom").value=Math.round(E.z*100);clampE();draw()}
+function setImg(img,txt){E.img=img;E.rot=0;E.z=1;E.x=0;E.y=0;E.base=2*R/Math.min(img.width,img.height);$("pzoom").value=100;$("pcap").textContent=txt||"Geser foto untuk memilih area. Gunakan penggeser atau cubit untuk memperbesar.";draw()}
+function useDefault(){E.img=null;E.dirty=true;defImg=new Image();defImg.onload=draw;defImg.src=avDef($("pjk").value);$("pcap").textContent="Foto bawaan. Pilih foto untuk menggantinya.";draw()}
+function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("perr").textContent="";
+  $("pttl").textContent=must?"Lengkapi profil kamu":"Ubah profil";
+  $("psub").textContent=must?"Isi nama lengkap dan jenis kelamin dulu ya. Foto profil boleh diganti sekarang atau nanti.":"";
+  $("pnamaIn").value=PROF.nama;$("pjk").value=PROF.jk;E.dirty=false;
+  if(PROF.foto){var im=new Image();im.onload=function(){setImg(im,"Foto saat ini. Geser, putar, atau pilih foto baru.")};im.src=PROF.foto}
+  else useDefault();
+  E.dirty=false}
+function closeProf(){if(PMAND)return;$("pmodal").hidden=true}
+function exportFoto(){var o=document.createElement("canvas");o.width=o.height=256;var c=o.getContext("2d"),f=256/(2*R),s=E.base*E.z*f;
+  c.fillStyle="#fff";c.fillRect(0,0,256,256);c.translate(128+E.x*f,128+E.y*f);c.rotate(E.rot*Math.PI/180);c.scale(s,s);c.drawImage(E.img,-E.img.width/2,-E.img.height/2);return o.toDataURL("image/jpeg",.85)}
+async function saveProf(){var nm=$("pnamaIn").value.trim().replace(/\s+/g," "),jk=$("pjk").value,er=$("perr");er.textContent="";
+  if(nm.length<3){er.textContent="Isi nama lengkap (minimal 3 huruf).";return}
+  if(!jk){er.textContent="Pilih jenis kelamin.";return}
+  $("psave").disabled=true;$("psave").textContent="Menyimpan…";
+  var foto=E.img?(E.dirty||!PROF.foto?exportFoto():PROF.foto):"",msg="";
+  var u=await sb.auth.updateUser({data:{nama:nm,jk:jk}});
+  if(u.error){er.textContent="Gagal menyimpan nama: "+u.error.message;$("psave").disabled=false;$("psave").textContent="Simpan";return}
+  try{if(foto)localStorage.setItem(fotoKey(),foto);else localStorage.removeItem(fotoKey())}catch(e){}
+  var r=await sb.from("profil").upsert({user_id:PROF.uid,foto:foto||null});
+  if(r.error)msg="Nama tersimpan. Foto baru tersimpan di perangkat ini saja (tabel profil belum dibuat di server).";
+  PROF.nama=nm;PROF.jk=jk;PROF.foto=foto;paintProf();
+  $("psave").disabled=false;$("psave").textContent="Simpan";PMAND=false;$("pmodal").hidden=true;if(msg)setSync(msg)}
+$("avbtn").addEventListener("click",function(){openProf(false)});$("pedit").addEventListener("click",function(){openProf(false)});
+$("pcancel").addEventListener("click",closeProf);$("psave").addEventListener("click",saveProf);
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("pmodal").hidden)closeProf()});
+$("pmodal").addEventListener("click",function(e){if(e.target===$("pmodal"))closeProf()});
+$("pjk").addEventListener("change",function(){if(!E.img)useDefault()});
+$("pfile").addEventListener("click",function(){$("pinp").click()});
+$("pinp").addEventListener("change",function(){var f=this.files&&this.files[0];this.value="";if(!f)return;
+  if(!/^image\//.test(f.type)){$("perr").textContent="Pilih berkas gambar (JPG, PNG, atau WebP).";return}
+  if(f.size>15*1048576){$("perr").textContent="Ukuran foto maksimal 15 MB.";return}
+  $("perr").textContent="";var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){E.dirty=true;setImg(im)};im.onerror=function(){$("perr").textContent="Foto tidak bisa dibaca. Coba foto lain."};im.src=fr.result};fr.readAsDataURL(f)});
+function rot(d){if(!E.img)return;E.rot=(E.rot+d+360)%360;E.dirty=true;clampE();draw()}
+$("protl").addEventListener("click",function(){rot(-90)});$("protr").addEventListener("click",function(){rot(90)});
+$("pdel").addEventListener("click",function(){useDefault()});
+$("pzoom").addEventListener("input",function(){if(E.img){E.dirty=true;setZ(this.value/100)}});
+function sc(){var r=cv().getBoundingClientRect();return C/r.width}
+cv().addEventListener("pointerdown",function(e){if(!E.img)return;cv().setPointerCapture(e.pointerId);ptr[e.pointerId]={x:e.clientX,y:e.clientY}});
+cv().addEventListener("pointermove",function(e){var p=ptr[e.pointerId];if(!p||!E.img)return;var ids=Object.keys(ptr);
+  if(ids.length>=2){var o=ids.filter(function(i){return+i!==e.pointerId})[0],q=ptr[o],d0=Math.hypot(p.x-q.x,p.y-q.y),d1=Math.hypot(e.clientX-q.x,e.clientY-q.y);if(d0>0){E.dirty=true;setZ(E.z*d1/d0)}}
+  else{E.x+=(e.clientX-p.x)*sc();E.y+=(e.clientY-p.y)*sc();E.dirty=true;clampE();draw()}
+  p.x=e.clientX;p.y=e.clientY});
+function pend(e){delete ptr[e.pointerId]}
+cv().addEventListener("pointerup",pend);cv().addEventListener("pointercancel",pend);
+cv().addEventListener("wheel",function(e){if(!E.img)return;e.preventDefault();E.dirty=true;setZ(E.z*(e.deltaY<0?1.08:1/1.08))},{passive:false});
 function today(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
 function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
