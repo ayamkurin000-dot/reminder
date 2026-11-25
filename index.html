@@ -220,14 +220,13 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
     var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:it.cat==="lain"?[]:[$("owner").value],loose=need.some(function(x){return!x});
     $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
-  $("hint").textContent=HINT[c]+(st?" Agenda STNK otomatis tampil sebagai pengumuman publik.":"")+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
+  $("hint").textContent=HINT[c]+""+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
   var ln=(c==="lain"),lo=!!(keep&&keep.loose&&keep.cat===c);
   $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk"&&!lo;
   $("lbl-veh").hidden=!st;$("veh").required=st&&!lo;$("lbl-col").hidden=!st;$("col").required=st&&!lo;
   $("lbl-title").hidden=!ln;$("title").required=ln&&!lo;$("lbl-owner").hidden=ln;$("owner").required=!ln&&!lo;
   $("lbl-owner").firstChild.textContent=c==="ultah"?"Nama yang berulang tahun":c==="nikah"?"Nama pasangan":"Atas nama";
-  if(!st&&$("pub").disabled)$("pub").checked=false;
-  if(st)$("pub").checked=true;$("pub").disabled=st;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+  $("pub").disabled=false;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
 function cap(t){return String(t).trim().toLowerCase().replace(/(^|[\s-])(\S)/g,function(_,a,b){return a+b.toUpperCase()})}
 function vname(v){var t=String(v).replace(/\b(motor|mobil|honda|yamaha|suzuki|kawasaki|toyota|daihatsu|mitsubishi|nissan|mazda|wuling|hyundai|kia|datsun|vespa|isuzu|hino|ford|chevrolet|timor)\b/gi," ").replace(/\s+/g," ").trim();return(t||String(v).trim()).toUpperCase()}
 function stnkHtml(five,veh,col,own){var e=esc;
