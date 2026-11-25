@@ -207,7 +207,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 var KEY="agenda-penting-v1";
 var CAT={stnk:{n:"HER STNK",step:1,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
 var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan (tahun pertama STNK terbit). Aplikasi otomatis menulis HER STNK TAHUNAN atau 5 TAHUNAN: setiap kelipatan 5 tahun dari tahun kendaraan. Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
-var GRUP=[["guru","Teman Guru"],["kuliah","Teman Kuliah"],["sukorejo","Sukorejo"],["gaprang","Gaprang"],["isbadar","Isbadar"],["mbah-kung","Mbah Kung"],["bani-mukti","Bani Mukti"],["bani-maruf","Bani Ma'ruf"],["ping-pong","Bolo Ping Pong"]],GN={},myGrup="",openG=null;
+var GRUP=[["guru","Teman Guru"],["kuliah","Teman Kuliah"],["sukorejo","Sukorejo"],["gaprang","Gaprang"],["isbadar","Isbadar"],["mbah-kung","Mbah Kung"],["bani-mukti","Bani Mukti"],["bani-maruf","Bani Ma'ruf"],["bani-fatchul","Bani Fatchul"],["ping-pong","Bolo Ping Pong"]],GN={},myGrup="",openG=null;
 GRUP.forEach(function(g){GN[g[0]]=g[1]});
 function okG(v){v=String(v||"").toLowerCase();return GN[v]?v:""}
 function urlGrup(){var v="";try{v=okG(new URLSearchParams(location.search).get("k"))}catch(e){}
