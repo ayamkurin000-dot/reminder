@@ -133,6 +133,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <body>
 <main>
 <div id="pubwrap" hidden><div class="hero pubhero" aria-live="polite"><span class="bell" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path class="bd" d="M12 2.2a1.4 1.4 0 0 0-1.4 1.4v.7C7.6 5 5.8 7.6 5.8 10.8v3.6L3.9 17.3c-.5.8.1 1.8 1 1.8h14.2c.9 0 1.5-1 1-1.8l-1.9-2.9v-3.6c0-3.2-1.8-5.8-4.8-6.5v-.7A1.4 1.4 0 0 0 12 2.2z"/><path class="bc" d="M9.6 20.2a2.4 2.4 0 0 0 4.8 0z"/></svg><i class="bdot"></i></span><h1>Pengumuman</h1><div id="pubalerts"><p class="aman">Memuat…</p></div></div></div>
+<div id="extras">
 <div id="inst" hidden role="region" aria-label="Pasang aplikasi">
   <button type="button" id="instx" class="instx" aria-label="Tutup">&times;</button>
   <b class="insth">📲 Pasang aplikasinya di HP kamu</b>
@@ -153,6 +154,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     <span class="alq-go" aria-hidden="true">➜</span>
   </span></span>
 </a>
+</div>
 <section id="auth" hidden>
 <h2>Masuk ke Pengingat Agenda</h2>
 <p id="gtag" class="meta" hidden style="margin:-6px 0 10px;color:var(--mute)"></p>
@@ -238,7 +240,9 @@ function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){
   if(r.error&&/grup|senyap/i.test(r.error.message||"")){var c=clean(it);delete c.grup;delete c.senyap;sb.from("agenda").upsert(c).then(function(r2){if(r2.error)fail(r2.error)});return}
   if(r.error)fail(r.error)})}
 function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
-function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on}
+function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;
+  /* Kartu Al-Qur'an (dan notifikasi pasang) selalu tepat di bawah jendela pengumuman, baik sebelum maupun sesudah login. */
+  var ex=$("extras"),ref=on?$("app").querySelector("section.hero"):$("pubwrap");if(ex&&ref)ref.insertAdjacentElement("afterend",ex)}
 async function loadRows(){
   var r=await sb.from("agenda").select("*");
   if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=norm(JSON.parse(c));render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
