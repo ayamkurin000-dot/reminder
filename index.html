@@ -217,17 +217,30 @@ async function loadRows(){
   var r=await sb.from("agenda").select("*");
   if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=norm(JSON.parse(c));render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
   items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync(isAdmin?"Admin: menampilkan data semua pengguna.":"Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
+/* Agenda bergilir: 2 slot. Setiap slot menampilkan satu nama sampai jatuh tempo lewat, lalu diganti nama berikutnya di daftar.
+   Slot 1: Alby, Fatih, Aziz, ... (indeks genap) | Slot 2: Val El, Azam, Fabio, ... (indeks ganjil). Daftar berputar kembali ke awal. */
+var NAMA_BERGILIR=["Alby","Val El","Fatih","Azam","Aziz","Fabio","Chacha","Alin","Lintang","Eliza","Aufa","Akmal","Arvatan","Sabil","Ahsin"];
+var JATUH_TEMPO_AWAL=["2026-11-29","2026-12-03"],DUR_MIN=3,DUR_MAX=9;
+/* Lama jatuh tempo tiap nama acak (3-9 hari, selalu di bawah 10) tapi tetap: hasilnya sama untuk semua pengunjung karena memakai bibit tetap (slot, urutan). */
+function durAcak(slot,k){var a=(slot*100003+k*7919+12345)>>>0;a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);var r=((t^t>>>14)>>>0)/4294967296;return DUR_MIN+Math.floor(r*(DUR_MAX-DUR_MIN+1))}
+function permaItems(){var t=today(),n=NAMA_BERGILIR.length;
+  return JATUH_TEMPO_AWAL.map(function(s,i){var due=parse(s),k=0;
+    while(due<t&&k<5000){k++;due=addDays(due,durAcak(i,k))}
+    return{id:-(i+1),name:"Agenda "+NAMA_BERGILIR[(i+2*k)%n],cat:"lain",date:iso(due),lead:30,note:"Pengingat tetap",perma:1}})}
+var PERMA_SHOWN=[];
+function isPerma(it){var nm=(it.name||"").toLowerCase();return PERMA_SHOWN.some(function(x){return nm.indexOf(x)>=0})}
 async function loadPublic(){
   var g=urlGrup(),q=sb.from("agenda").select("id,name,cat,date,lead,note,grup").eq("publik",true);
   if(g)q=q.eq("grup",g);
   var r=await q,box=$("pubalerts"),noCol=false;
   if(r.error&&!g){noCol=true;r=await sb.from("agenda").select("id,name,cat,date,lead,note").eq("publik",true)}
   $("auth").querySelector(".hero h1").textContent="Pengumuman"+(g?" · "+GN[g]:"");
-  if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p><p style="margin:8px 0 0;font-size:13px;opacity:.7">'+esc(r.error.message||"")+'</p>';return}
-  var al=norm(r.data).map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
-  box.innerHTML=al.length?al.map(function(x){var n=x.i.left<0?"−"+(-x.i.left):x.i.left;
-    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" · "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
-    :'<p class="aman">Tidak ada pengumuman saat ini.</p>'}
+  var pm=permaItems();PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^Agenda /,"").toLowerCase()});
+  var db=r.error?[]:norm(r.data).filter(function(it){return!isPerma(it)});
+  var al=db.concat(pm).map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.it.perma||x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
+  var errHtml=r.error?'<p style="margin:0 0 10px;font-size:13px;opacity:.7">Pengumuman lain belum bisa dimuat: '+esc(r.error.message||"")+'</p>':"";
+  box.innerHTML=errHtml+al.map(function(x){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
+    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+'</small></div></div>'}).join("")}
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
