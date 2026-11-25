@@ -151,6 +151,15 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .lwrap{margin:auto;text-align:center;max-width:100%}
 .lwrap img{max-width:100%;max-height:75vh;border-radius:10px;background:#e2e8f0;display:block;margin:0 auto}
 .sfoto{margin-top:4px}.sfrow{display:flex;align-items:center;gap:12px}.sfrow img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--line);flex:none}
+.demo{display:inline-block;margin-right:6px;padding:1px 9px;border-radius:999px;font-size:.72em;font-weight:900;letter-spacing:.14em;color:#1b1300;background:linear-gradient(90deg,#ffd166,#fff3b0,#ffd166);background-size:200% 100%;animation:demogeser 1.6s linear infinite,demodenyut 1.2s ease-in-out infinite;vertical-align:middle}
+@keyframes demogeser{to{background-position:-200% 0}}
+@keyframes demodenyut{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,209,102,.6)}50%{transform:scale(1.08);box-shadow:0 0 0 6px rgba(255,209,102,0)}}
+.kosong{text-align:center;padding:18px 12px}.kosong .kic{display:block;font-size:44px;animation:kosongterbang 2.6s ease-in-out infinite}
+.kosong b{display:block;margin-top:6px;font-size:22px;font-weight:800;background:linear-gradient(90deg,#0ea5e9,#22c55e,#f59e0b,#0ea5e9);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:kosongwarna 4s linear infinite}
+.kosong small{display:block;margin-top:4px;opacity:.75}
+@keyframes kosongterbang{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+@keyframes kosongwarna{to{background-position:-300% 0}}
+@media (prefers-reduced-motion:reduce){.demo,.kosong .kic,.kosong b{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -343,7 +352,7 @@ async function loadPublic(){
   var al=db.concat(pm.map(function(it){return{it:it,i:info(it)}})).filter(function(x){return x.it.perma||x.i.st!=="ok"||x.i.left<AMBANG_ASLI}).sort(function(a,b){return a.i.left-b.i.left});
   var errHtml=r.error?'<p style="margin:0 0 10px;font-size:13px;opacity:.7">Pengumuman lain belum bisa dimuat: '+esc(r.error.message||"")+'</p>':"";
   box.innerHTML=errHtml+al.map(function(x){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
-    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+'</small></div></div>'}).join("")}
+    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+(x.it.perma?'<span class="demo">DEMO</span>':'')+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+(x.it.perma?" \u00b7 Contoh tampilan, bukan data asli":"")+'</small></div></div>'}).join("")}
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
@@ -518,11 +527,12 @@ function renderFolders(rows){
     var rs=rows.filter(function(r){return gk(r.it)===g[0]}),mt=rs.filter(function(r){return r.mute}),soon=rs.filter(function(r){return r.i.left<ADMIN_HARI&&!r.mute}),hot=soon.filter(function(r){return r.i.left<=5});
     return '<div class="fw"><button type="button" class="fcard'+(hot.length?' hot soon':soon.length?' soon':'')+'" data-g="'+esc(g[0])+'"><span class="ic">'+(soon.length?'🔔':'📁')+'</span><b>'+esc(g[1])+'</b><span class="meta">'+rs.length+' agenda</span>'
       +(soon.length?'<span class="tag">'+soon.length+' &lt; '+ADMIN_HARI+' hari</span>':'')+(mt.length?'<span class="meta">🔕 '+mt.length+' senyap</span>':'')+'</button>'+(g[0]?'<button type="button" class="flink" data-copy="'+esc(g[0])+'">🔗 Salin link</button>':'')+'</div>'}).join("")+'</div>'}
+function kosongHtml(sub){return'<div class="kosong"><span class="kic" aria-hidden="true">\ud83d\uddd3\ufe0f</span><b>Belum ada agenda</b><small>'+sub+'</small></div>'}
 function render(){
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){var i=info(it);return{it:it,i:i,mute:isAdmin&&isSenyap(it,i)}}).sort(function(a,b){return a.i.left-b.i.left});
   var al=rows.filter(function(r){return isAdmin?(r.i.left<ADMIN_HARI&&!r.mute):r.i.st!=="ok"});
-  $("alerts").innerHTML=al.length?al.map(function(r){
+  $("alerts").innerHTML=!items.length?kosongHtml("Agenda yang ditambahkan akan tampil di sini."):al.length?al.map(function(r){
     var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
     return '<div class="alert"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(isAdmin&&gk(r.it)?" · "+esc(GN[gk(r.it)]):"")+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">'+(isAdmin?"Tidak ada agenda yang jatuh tempo kurang dari "+ADMIN_HARI+" hari.":"Tidak ada agenda yang perlu diurus sekarang.")+'</p>';
@@ -532,7 +542,7 @@ function render(){
     return '<div class="item '+r.i.st+'"><div><b>'+esc(it.name)+'</b><div class="meta">'+c.n+r.i.extra+' · '+fmt(r.i.date)+(it.publik?' · 🌐 publik':'')+(r.mute?' · 🔕 senyap':'')+(it.note?'<br>'+esc(it.note):'')+'</div></div><span class="badge">'+r.i.txt+'</span><div class="acts">'
     +(c.mode==="renew"?'<button class="pri" data-a="renew" data-id="'+it.id+'">Sudah diperpanjang (+'+c.step+' thn)</button>':'')
     +(isAdmin?'<button data-a="mute" data-id="'+it.id+'">'+(r.mute?'🔔 Aktifkan notifikasi':'🔕 Senyap')+'</button>':'')+'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div></div>'}).join("")
-    :'<div class="empty">Belum ada agenda. Tambahkan agenda pertama di formulir bawah.</div>';
+    :'<div class="empty">'+kosongHtml("Tambahkan agenda pertama di formulir bawah.")+'</div>';
 }
 $("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);if(it.cat==="stnk"&&it.vehicle)it.name=buildName(it);put(it);render()}
