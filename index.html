@@ -58,12 +58,16 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alert .five{color:#ffee00;font-weight:900;font-size:1.25em;text-shadow:0 0 6px #ffee00,0 0 14px #ffd000}.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
 .num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
 @keyframes kedip{50%{opacity:.15}}
+.num.wig{color:#ffe500;transform-origin:50% 60%;animation:goyang 3.8s ease-in-out infinite}
+@keyframes goyang{0%,22%,100%{transform:rotate(0)}3%{transform:rotate(-10deg)}7%{transform:rotate(10deg)}11%{transform:rotate(-7deg)}15%{transform:rotate(7deg)}19%{transform:rotate(-3deg)}}
+.alert:nth-of-type(10n+1) .num.wig{animation-delay:-0.90s}.alert:nth-of-type(10n+2) .num.wig{animation-delay:-1.80s}.alert:nth-of-type(10n+3) .num.wig{animation-delay:-2.70s}.alert:nth-of-type(10n+4) .num.wig{animation-delay:-3.60s}.alert:nth-of-type(10n+5) .num.wig{animation-delay:-0.70s}.alert:nth-of-type(10n+6) .num.wig{animation-delay:-1.60s}.alert:nth-of-type(10n+7) .num.wig{animation-delay:-2.50s}.alert:nth-of-type(10n+8) .num.wig{animation-delay:-3.40s}.alert:nth-of-type(10n+9) .num.wig{animation-delay:-0.50s}.alert:nth-of-type(10n+10) .num.wig{animation-delay:-1.40s}
+
 #lbl-col,#lbl-veh{position:relative}.sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;color:#1b2430;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);margin-top:2px;overflow:hidden}.sug div{padding:11px 14px;cursor:pointer;font-weight:600}.sug div+div{border-top:1px solid #eef1f5}.sug div:hover,.sug div:active{background:#eef4ff}
 .alert .blink{animation:kedip 1s ease-in-out infinite}
 .alert:nth-of-type(10n+1) .blink{animation-delay:-0.87s}.alert:nth-of-type(10n+2) .blink{animation-delay:-0.24s}.alert:nth-of-type(10n+3) .blink{animation-delay:-0.61s}.alert:nth-of-type(10n+4) .blink{animation-delay:-0.98s}.alert:nth-of-type(10n+5) .blink{animation-delay:-0.35s}.alert:nth-of-type(10n+6) .blink{animation-delay:-0.72s}.alert:nth-of-type(10n+7) .blink{animation-delay:-0.09s}.alert:nth-of-type(10n+8) .blink{animation-delay:-0.46s}.alert:nth-of-type(10n+9) .blink{animation-delay:-0.83s}.alert:nth-of-type(10n+10) .blink{animation-delay:-0.20s}
 
 .alert:nth-of-type(10n+1) .num.urg{animation-delay:-0.37s}.alert:nth-of-type(10n+2) .num.urg{animation-delay:-0.74s}.alert:nth-of-type(10n+3) .num.urg{animation-delay:-0.11s}.alert:nth-of-type(10n+4) .num.urg{animation-delay:-0.48s}.alert:nth-of-type(10n+5) .num.urg{animation-delay:-0.85s}.alert:nth-of-type(10n+6) .num.urg{animation-delay:-0.22s}.alert:nth-of-type(10n+7) .num.urg{animation-delay:-0.59s}.alert:nth-of-type(10n+8) .num.urg{animation-delay:-0.96s}.alert:nth-of-type(10n+9) .num.urg{animation-delay:-0.33s}.alert:nth-of-type(10n+10) .num.urg{animation-delay:-0.70s}
-@media (prefers-reduced-motion:reduce){.num.urg,.alert .blink{animation:none}}
+@media (prefers-reduced-motion:reduce){.num.urg,.num.wig,.alert .blink{animation:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -157,7 +161,7 @@ async function loadPublic(){
   if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p>';return}
   var al=norm(r.data).map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
   box.innerHTML=al.length?al.map(function(x){var n=x.i.left<0?"−"+(-x.i.left):x.i.left;
-    return '<div class="alert"><div class="num'+(x.i.left<=5?' urg':'')+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
+    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">Tidak ada pengumuman saat ini.</p>'}
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
@@ -197,6 +201,7 @@ function info(it){var n=nextDate(it),left=Math.round((n-today())/864e5),st="ok",
   else{txt=left+" hari lagi";if(left<=7)st="bad";else if(left<=it.lead)st="warn"}
   var extra="";if(CAT[it.cat].mode==="auto"){var age=n.getFullYear()-parse(it.date).getFullYear();extra=it.cat==="ultah"?" · ke-"+age:" · tahun ke-"+age}
   return{date:n,left:left,st:st,txt:txt,extra:extra}}
+function numCls(l){return l<=5?" urg":l<10?" wig":""}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function render(){
   $("today").textContent="Hari ini, "+fmt(today());
@@ -204,7 +209,7 @@ function render(){
   var al=rows.filter(function(r){return r.i.st!=="ok"});
   $("alerts").innerHTML=al.length?al.map(function(r){
     var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
-    return '<div class="alert"><div class="num'+(r.i.left<=5?' urg':'')+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
+    return '<div class="alert"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
     :'<p class="aman">Tidak ada agenda yang perlu diurus sekarang.</p>';
   $("list").innerHTML=rows.length?rows.map(function(r){var it=r.it,c=CAT[it.cat];
     return '<div class="item '+r.i.st+'"><div><b>'+esc(it.name)+'</b><div class="meta">'+c.n+r.i.extra+' · '+fmt(r.i.date)+(it.publik?' · 🌐 publik':'')+(it.note?'<br>'+esc(it.note):'')+'</div></div><span class="badge">'+r.i.txt+'</span><div class="acts">'
