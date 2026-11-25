@@ -150,6 +150,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .lbox{background:rgba(5,8,14,.88);align-items:center}
 .lwrap{margin:auto;text-align:center;max-width:100%}
 .lwrap img{max-width:100%;max-height:75vh;border-radius:10px;background:#e2e8f0;display:block;margin:0 auto}
+.sfoto{margin-top:4px}.sfrow{display:flex;align-items:center;gap:12px}.sfrow img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--line);flex:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -184,7 +185,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <form id="af">
   <label>Email<input id="em" type="email" required autocomplete="email"></label>
   <label id="lbl-nama" hidden>Nama lengkap<input id="nama" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ahmad Fauzi"></label>
-  <label id="lbl-jk" hidden>Jenis kelamin (untuk foto profil bawaan)<select id="jk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+  <label id="lbl-jk" hidden>Jenis kelamin<select id="jk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+  <div id="lbl-foto" class="sfoto" hidden><div class="meta" style="font-weight:600;margin-bottom:6px">Foto profil (wajib)</div><div class="sfrow"><img id="sfimg" alt="Foto profil" width="72" height="72"><button type="button" class="pri" id="sfbtn">📷 Atur foto profil</button></div></div>
   <label>Kata sandi (min. 6 karakter)<input id="pw" type="password" required minlength="6" autocomplete="current-password"></label>
   <label id="lbl-pw2" hidden>Ulangi kata sandi<input id="pw2" type="password" minlength="6" autocomplete="new-password"></label>
   <label class="cek" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="showpw" style="width:auto"> Tampilkan kata sandi</label>
@@ -247,6 +249,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     <p id="psub" class="meta" style="margin:0 0 12px"></p>
     <label>Nama lengkap<input id="pnamaIn" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ahmad Fauzi"></label>
     <label style="margin-top:10px">Jenis kelamin (menentukan foto bawaan)<select id="pjk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+    <div class="sfoto" style="margin-top:10px"><div class="meta" style="font-weight:600;margin-bottom:6px">Foto profil</div><div class="sfrow"><img id="pimg" alt="Foto profil" width="72" height="72"><button type="button" class="pri" id="pfoto">📷 Pilih foto profil</button></div></div>
     <p class="err" id="perr" role="alert"></p>
     <div class="prow" style="margin-top:6px"><button type="button" class="pri" id="psave">Simpan</button><button type="button" id="pcancel">Batal</button></div>
   </div>
@@ -270,7 +273,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 </div>
 <div id="lbox" class="pmodal lbox" hidden role="dialog" aria-modal="true" aria-label="Foto profil">
   <div class="lwrap"><img id="limg" alt="Foto profil ukuran asli">
-    <div class="prow" style="margin-top:12px"><button type="button" class="pri" id="lganti">📷 Ganti foto</button><button type="button" id="lbawa">Pakai foto bawaan</button><button type="button" id="ltutup">Tutup</button></div>
+    <div class="prow" style="margin-top:12px"><button type="button" class="pri" id="lganti">📷 Ganti foto</button><button type="button" id="ltutup">Tutup</button></div>
   </div>
 </div>
 <input id="pinp" type="file" accept="image/*" hidden>
@@ -348,7 +351,7 @@ async function initDb(){
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
-function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
+function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-foto").hidden=!on;if(on)paintSf();$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
 $("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
 $("backlogin").addEventListener("click",function(){setReg(false)});
 async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").className="err";
@@ -358,8 +361,10 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
   var nm=$("nama").value.trim().replace(/\s+/g," ");
   if(nm.length<3){hot($("aerr"),"Isi Nama Lengkap !!!");$("nama").focus();return}
   if(!$("jk").value){$("aerr").textContent="Pilih jenis kelamin.";return}
+  if(!SIGNFOTO){hot($("aerr"),"Atur Foto Profil Dulu !!!");return}
   var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
+  try{localStorage.setItem("foto-daftar",JSON.stringify({email:$("em").value.trim().toLowerCase(),foto:SIGNFOTO}))}catch(e){}
   if(!r.data.session){$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk.";setReg(false);$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk."}}
 $("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;
   if(regMode){doSignup();return}
@@ -374,13 +379,21 @@ $("folders").addEventListener("click",function(e){if(e.target.closest("[data-cop
 $("fback").addEventListener("click",function(){openG=null;render()});
 $("logout").addEventListener("click",function(){sb.auth.signOut()});
 /* ===== Profil: nama lengkap + foto (crop, putar, geser) ===== */
-var PROF={nama:"",jk:"",foto:"",uid:""},PMAND=false,PEND;
+var PROF={nama:"",jk:"",foto:"",uid:""},PMAND=false,PEND,SIGNFOTO="",FTARGET="profil";
 function svgUri(x){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e2e8f0"/>'+x+'</svg>')}
 var AV_L=svgUri('<circle cx="50" cy="37" r="17" fill="#94a3b8"/><path d="M15 100c0-25 15-37 35-37s35 12 35 37z" fill="#94a3b8"/>');
 var AV_P=svgUri('<path d="M50 13c-18 0-27 12-27 29 0 8 2 14 5 19-9 4-15 13-15 39h74c0-26-6-35-15-39 3-5 5-11 5-19 0-17-9-29-27-29z" fill="#64748b"/><ellipse cx="50" cy="44" rx="14" ry="17" fill="#cbd5e1"/>');
 function avDef(jk){return jk==="P"?AV_P:AV_L}
 function fotoNow(){return PEND!==undefined?PEND:PROF.foto}
-function paintProf(){$("avimg").src=fotoNow()||avDef(PROF.jk);$("pnama").textContent=PROF.nama||"(nama belum diisi)";$("pemail").textContent=PROF.email||"";
+function paintSf(){$("sfimg").src=SIGNFOTO||avDef($("jk").value)}
+$("jk").addEventListener("change",function(){if(!SIGNFOTO)paintSf()});
+$("sfbtn").addEventListener("click",function(){FTARGET="daftar";pilihFoto()});
+$("sfimg").addEventListener("click",function(){FTARGET="daftar";pilihFoto()});
+function paintPm(){$("pimg").src=fotoNow()||avDef($("pjk").value||PROF.jk)}
+$("pfoto").addEventListener("click",function(){FTARGET="profil";pilihFoto()});
+$("pimg").addEventListener("click",function(){FTARGET="profil";pilihFoto()});
+$("pjk").addEventListener("change",function(){if(!fotoNow())paintPm()});
+function paintProf(){$("avimg").src=fotoNow()||avDef(PROF.jk);paintPm();$("pnama").textContent=PROF.nama||"(nama belum diisi)";$("pemail").textContent=PROF.email||"";
   $("psimpan").disabled=PEND===undefined;
   $("pstat").textContent=PEND===undefined?"Ketuk foto untuk mengganti.":"Foto diganti. Tekan Simpan untuk menyimpannya."}
 function fotoKey(){return"foto-"+PROF.uid}
@@ -390,32 +403,38 @@ async function loadProfil(user){var m=user.user_metadata||{};
   paintProf();
   var r=await sb.from("profil").select("foto").eq("user_id",user.id).maybeSingle();
   if(!r.error&&r.data&&r.data.foto){PROF.foto=r.data.foto;paintProf()}
-  if(!PROF.nama||!PROF.jk)openProf(true)}
+  /* foto yang dipilih saat daftar (tersimpan di perangkat ini) dipasang otomatis setelah login pertama */
+  try{var d=JSON.parse(localStorage.getItem("foto-daftar")||"null");
+    if(d&&d.foto&&(d.email||"")===(user.email||"").toLowerCase()){localStorage.removeItem("foto-daftar");
+      if(!PROF.foto){PROF.foto=d.foto;try{localStorage.setItem(fotoKey(),d.foto)}catch(e){}paintProf();sb.from("profil").upsert({user_id:user.id,foto:d.foto})}}}catch(e){}
+  if(!PROF.nama||!PROF.jk||!PROF.foto)openProf(true)}
 /* --- nama & jenis kelamin --- */
 function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("perr").className="err";$("perr").textContent="";
   $("pttl").textContent=must?"Lengkapi profil kamu":"Ubah profil";
-  $("psub").textContent=must?"Isi nama lengkap dan jenis kelamin dulu ya.":"";
-  $("pnamaIn").value=PROF.nama;$("pjk").value=PROF.jk}
+  $("psub").textContent=must?"Lengkapi nama lengkap, jenis kelamin, dan foto profil dulu ya. Semuanya wajib diisi.":"";
+  $("pnamaIn").value=PROF.nama;$("pjk").value=PROF.jk;paintPm()}
 function closeProf(){if(PMAND)return;$("pmodal").hidden=true}
 async function saveProf(){var nm=$("pnamaIn").value.trim().replace(/\s+/g," "),jk=$("pjk").value,er=$("perr");er.className="err";er.textContent="";
   if(nm.length<3){hot(er,"Isi Nama Lengkap !!!");$("pnamaIn").focus();return}
   if(!jk){er.textContent="Pilih jenis kelamin.";return}
+  if(!fotoNow()){hot(er,"Pilih Foto Profil Dulu !!!");return}
   $("psave").disabled=true;$("psave").textContent="Menyimpan…";
   var u=await sb.auth.updateUser({data:{nama:nm,jk:jk}});
-  $("psave").disabled=false;$("psave").textContent="Simpan";
-  if(u.error){er.textContent="Gagal menyimpan: "+u.error.message;return}
-  PROF.nama=nm;PROF.jk=jk;paintProf();PMAND=false;$("pmodal").hidden=true}
+  if(u.error){$("psave").disabled=false;$("psave").textContent="Simpan";er.textContent="Gagal menyimpan: "+u.error.message;return}
+  PROF.nama=nm;PROF.jk=jk;
+  if(PEND!==undefined){var foto=PEND;try{localStorage.setItem(fotoKey(),foto)}catch(e){}
+    var r=await sb.from("profil").upsert({user_id:PROF.uid,foto:foto});PROF.foto=foto;PEND=undefined;
+    if(r.error)setSync("Foto tersimpan di perangkat ini saja (tabel profil belum dibuat di server).")}
+  $("psave").disabled=false;$("psave").textContent="Simpan";paintProf();PMAND=false;$("pmodal").hidden=true}
 $("pedit").addEventListener("click",function(){openProf(false)});
 $("pcancel").addEventListener("click",closeProf);$("psave").addEventListener("click",saveProf);
 $("pmodal").addEventListener("click",function(e){if(e.target===$("pmodal"))closeProf()});
-$("pjk").addEventListener("change",function(){});
 /* --- ketuk foto: belum diganti = langsung pilih foto (galeri/kamera); sudah ada = tampil ukuran asli --- */
 function pilihFoto(){$("pinp").click()}
-$("avbtn").addEventListener("click",function(){var f=fotoNow();if(!f){pilihFoto();return}$("limg").src=f;$("lbox").hidden=false});
+$("avbtn").addEventListener("click",function(){FTARGET="profil";var f=fotoNow();if(!f){pilihFoto();return}$("limg").src=f;$("lbox").hidden=false});
 $("ltutup").addEventListener("click",function(){$("lbox").hidden=true});
 $("lbox").addEventListener("click",function(e){if(e.target===$("lbox"))$("lbox").hidden=true});
-$("lganti").addEventListener("click",function(){$("lbox").hidden=true;pilihFoto()});
-$("lbawa").addEventListener("click",function(){$("lbox").hidden=true;PEND=PROF.foto?"":undefined;paintProf()});
+$("lganti").addEventListener("click",function(){FTARGET="profil";$("lbox").hidden=true;pilihFoto()});
 $("pinp").addEventListener("change",function(){var f=this.files&&this.files[0];this.value="";if(!f)return;
   if(!/^image\//.test(f.type)){alert("Pilih berkas gambar (JPG, PNG, atau WebP).");return}
   if(f.size>15*1048576){alert("Ukuran foto maksimal 15 MB.");return}
@@ -433,7 +452,8 @@ function setZ(z){E.z=Math.max(1,Math.min(4,z));$("pzoom").value=Math.round(E.z*1
 function bukaEditor(img){E.img=img;E.rot=0;E.z=1;E.x=0;E.y=0;E.base=2*R/Math.min(img.width,img.height);$("pzoom").value=100;$("ferr").textContent="";$("fmodal").hidden=false;draw()}
 function exportFoto(){var o=document.createElement("canvas");o.width=o.height=512;var c=o.getContext("2d"),f=512/(2*R),s=E.base*E.z*f;
   c.fillStyle="#fff";c.fillRect(0,0,512,512);c.translate(256+E.x*f,256+E.y*f);c.rotate(E.rot*Math.PI/180);c.scale(s,s);c.drawImage(E.img,-E.img.width/2,-E.img.height/2);return o.toDataURL("image/jpeg",.88)}
-$("fpakai").addEventListener("click",function(){if(!E.img)return;PEND=exportFoto();$("fmodal").hidden=true;paintProf()});
+$("fpakai").addEventListener("click",function(){if(!E.img)return;var f=exportFoto();$("fmodal").hidden=true;
+  if(FTARGET==="daftar"){SIGNFOTO=f;paintSf();$("aerr").className="err";$("aerr").textContent=""}else{PEND=f;paintProf();$("perr").className="err";$("perr").textContent=""}});
 $("fbatal").addEventListener("click",function(){$("fmodal").hidden=true});
 $("fmodal").addEventListener("click",function(e){if(e.target===$("fmodal"))$("fmodal").hidden=true});
 $("pfile").addEventListener("click",pilihFoto);
