@@ -246,9 +246,6 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     <select id="cat">
       <option value="stnk">HER STNK (tahunan / 5 tahunan otomatis)</option>
       <option value="sim">HER SIM (5 tahunan)</option>
-      <option value="ultah">Ulang tahun</option>
-      <option value="nikah">Ulang tahun pernikahan</option>
-      <option value="lain">Lainnya (sekali saja)</option>
     </select>
   </label>
   <label id="lbl-grp" hidden>Kelompok (khusus admin)<select id="grp"></select></label>
@@ -256,7 +253,6 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <label id="lbl-veh">Nama kendaraan<input id="veh" maxlength="40" autocomplete="off" placeholder="Ketik huruf awal, mis. b → Beat"><div id="sug2" class="sug" hidden></div></label>
   <label id="lbl-col">Warna kendaraan<input id="col" maxlength="30" autocomplete="off" placeholder="Ketik huruf awal, mis. b → Biru"><div id="sug" class="sug" hidden></div></label>
   <label id="lbl-five">Tahun kendaraan<select id="five"></select></label>
-  <label id="lbl-title" class="full">Judul agenda<input id="title" maxlength="80" placeholder="Contoh: Bayar asuransi rumah"></label>
   <label id="dlabel">Tanggal jatuh tempo<span class="dsel"><select id="dd" aria-label="Tanggal"></select><select id="dm" aria-label="Bulan"></select><select id="dy" aria-label="Tahun"></select></span></label>
   <label>Ingatkan sebelum
     <select id="lead"><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="60">60 hari</option><option value="90">90 hari</option></select>
@@ -308,8 +304,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 <script>
 var KEY="agenda-penting-v1";
-var CAT={stnk:{n:"HER STNK",step:1,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"},ultah:{n:"Ulang tahun",step:1,mode:"auto"},nikah:{n:"Ulang tahun pernikahan",step:1,mode:"auto"},lain:{n:"Lainnya",step:0,mode:"none"}};
-var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan (tahun pertama STNK terbit). Aplikasi otomatis menulis HER STNK TAHUNAN atau 5 TAHUNAN: setiap kelipatan 5 tahun dari tahun kendaraan. Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun.",ultah:"Isi dengan tanggal lahir. Agenda akan berulang otomatis setiap tahun.",nikah:"Isi dengan tanggal pernikahan. Agenda akan berulang otomatis setiap tahun.",lain:"Agenda sekali saja, tidak berulang."};
+var CAT={stnk:{n:"HER STNK",step:1,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",step:5,mode:"renew"}};
+var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan (tahun pertama STNK terbit). Aplikasi otomatis menulis HER STNK TAHUNAN atau 5 TAHUNAN: setiap kelipatan 5 tahun dari tahun kendaraan. Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun."};
 var GRUP=[["guru","Teman Guru"],["kuliah","Teman Kuliah"],["sukorejo","Sukorejo"],["gaprang","Gaprang"],["isbadar","Isbadar"],["mbah-kung","Mbah Kung"],["bani-mukti","Bani Mukti"],["bani-maruf","Bani Ma'ruf"],["bani-fatchul","Bani Fatchul"],["ping-pong","Bolo Ping Pong"]],GN={},myGrup="",openG=null;
 GRUP.forEach(function(g){GN[g[0]]=g[1]});
 function okG(v){v=String(v||"").toLowerCase();return GN[v]?v:""}
@@ -319,11 +315,10 @@ function urlGrup(){var v="";try{v=okG(new URLSearchParams(location.search).get("
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 var items=[],editId=null,keep=null;
 function $(i){return document.getElementById(i)}
-function norm(a){return(a||[]).map(function(x){if(x.cat==="stnk1"||x.cat==="stnk5")x.cat="stnk";if(!CAT[x.cat])x.cat="lain";return x})}
+function norm(a){return(a||[]).map(function(x){if(x.cat==="stnk1"||x.cat==="stnk5")x.cat="stnk";return x}).filter(function(x){return!!CAT[x.cat]})}
 function load(){try{var r=localStorage.getItem(KEY);if(r){items=norm(JSON.parse(r));return}}catch(e){}
   var y=new Date().getFullYear();
   items=[{id:1,name:"HER STNK Honda Vario (contoh)",cat:"stnk",five:y-3,date:iso(addDays(today(),12)),lead:30,note:"Bawa KTP asli dan BPKB"},
-         {id:2,name:"Ulang tahun Ibu (contoh)",cat:"ultah",date:(y-55)+"-12-02",lead:14,note:""},
          {id:3,name:"HER STNK Avanza (contoh)",cat:"stnk",five:addDays(today(),200).getFullYear()-5,date:iso(addDays(today(),200)),lead:60,note:""}];}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
 var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXNxTWL9vR7NgsP110b_Tg_K6Ytag4q",sb=null,ADMIN_EMAIL="ayamkurin000@gmail.com",isAdmin=false;
@@ -352,7 +347,7 @@ var FORMAT_SLOT=[function(n){return"HER STNK Tahunan VARIO Putih an. "+n},functi
 function permaItems(){var t=today(),n=NAMA_BERGILIR.length;
   return JATUH_TEMPO_AWAL.map(function(s,i){var due=parse(s),k=0;
     while(due<t&&k<5000){k++;due=addDays(due,durAcak(i,k))}
-    return{id:-(i+1),name:FORMAT_SLOT[i](NAMA_BERGILIR[(i+2*k)%n].toUpperCase()),cat:"lain",date:iso(due),lead:30,note:"",perma:1}})}
+    return{id:-(i+1),name:FORMAT_SLOT[i](NAMA_BERGILIR[(i+2*k)%n].toUpperCase()),cat:i===0?"stnk":"sim",date:iso(due),lead:30,note:"",perma:1}})}
 var PERMA_SHOWN=[];
 function isPerma(it){var nm=(it.name||"").toLowerCase();return PERMA_SHOWN.some(function(x){return nm.indexOf(x)>=0})}
 async function loadPublic(){
@@ -510,14 +505,12 @@ function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"
 function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
 function addYears(s,n){var d=parse(s);return iso(new Date(d.getFullYear()+n,d.getMonth(),d.getDate()))}
 function fmt(d){return d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear()}
-function nextDate(it){var c=CAT[it.cat],d=parse(it.date),t=today();
-  if(c.mode==="auto"){var n=new Date(t.getFullYear(),d.getMonth(),d.getDate());if(n<t)n=new Date(t.getFullYear()+1,d.getMonth(),d.getDate());return n}
-  return d}
+function nextDate(it){return parse(it.date)}
 function info(it){var n=nextDate(it),left=Math.round((n-today())/864e5),st="ok",txt;
   if(left<0){st="bad";txt="Terlambat "+(-left)+" hari"}
   else if(left===0){st="bad";txt="Hari ini"}
   else{txt=left+" hari lagi";if(left<=7)st="bad";else if(left<=it.lead)st="warn"}
-  var extra="";if(CAT[it.cat].mode==="auto"){var age=n.getFullYear()-parse(it.date).getFullYear();extra=it.cat==="ultah"?" · ke-"+age:" · tahun ke-"+age}
+  var extra="";
   return{date:n,left:left,st:st,txt:txt,extra:extra}}
 function numCls(l){return l<=5?" urg":l<10?" wig":""}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -575,17 +568,17 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
   else if(b.dataset.a==="mute"){var inf=info(it);it.senyap=isSenyap(it,inf)?"":iso(inf.date);put(it);render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id);render()}}
   else{editId=id;$("grp").value=gk(it);var pr=parseName(it);
-    $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";setCol(it.color||pr.color||"");$("title").value=it.cat==="lain"?it.name:"";
-    var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:it.cat==="lain"?[]:[$("owner").value],loose=need.some(function(x){return!x});
+    $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";setCol(it.color||pr.color||"");
+    var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:[$("owner").value],loose=need.some(function(x){return!x});
     $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
   $("hint").textContent=HINT[c]+""+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
-  var ln=(c==="lain"),lo=!!(keep&&keep.loose&&keep.cat===c);
+  var lo=!!(keep&&keep.loose&&keep.cat===c);
   $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk"&&!lo;
   $("lbl-veh").hidden=!st;$("veh").required=st&&!lo;$("lbl-col").hidden=!st;$("col").required=st&&!lo;
-  $("lbl-title").hidden=!ln;$("title").required=ln&&!lo;$("lbl-owner").hidden=ln;$("owner").required=!ln&&!lo;
-  $("lbl-owner").firstChild.textContent=c==="ultah"?"Nama yang berulang tahun":c==="nikah"?"Nama pasangan":"Atas nama";
-  $("pub").disabled=false;$("dlabel").firstChild.textContent=(c==="ultah"||c==="nikah")?"Tanggal lahir / menikah":"Tanggal jatuh tempo"}
+  $("lbl-owner").hidden=false;$("owner").required=!lo;
+  $("lbl-owner").firstChild.textContent="Atas nama";
+  $("pub").disabled=false;$("dlabel").firstChild.textContent="Tanggal jatuh tempo"}
 function cap(t){return String(t).trim().toLowerCase().replace(/(^|[\s-])(\S)/g,function(_,a,b){return a+b.toUpperCase()})}
 function vname(v){var t=String(v).replace(/\b(motor|mobil|honda|yamaha|suzuki|kawasaki|toyota|daihatsu|mitsubishi|nissan|mazda|wuling|hyundai|kia|datsun|vespa|isuzu|hino|ford|chevrolet|timor)\b/gi," ").replace(/\s+/g," ").trim();return(t||String(v).trim()).toUpperCase()}
 function stnkHtml(five,veh,col,own){var e=esc;
@@ -595,32 +588,25 @@ function rich(name){var m,e=esc;
   if(m=name.match(/^HER STNK (5 )?tahunan (.+) an\. (.+)$/i)){var p=m[2].split(" "),c=p.length>1?p.pop():"";return stnkHtml(!!m[1],p.join(" "),c,m[3])}
   if(m=name.match(/^HER STNK (5 )?TAHUNAN (.+) warna (.+) atas nama (.+)$/i))return stnkHtml(!!m[1],m[2],m[3],m[4]);
   if(m=name.match(/^HER SIM (?:an\.|atas nama) (.+)$/i))return simHtml(m[1]);
-  if(m=name.match(/^(Ulang tahun pernikahan|Ulang tahun) (.+)$/))
-    return '<span class="j">'+e(m[1])+'</span> <span class="n">'+e(m[2])+'</span>';
   return e(name)}
 function parseName(it){var n=it.name||"",m,r={};
   if(m=n.match(/^HER STNK (?:5 TAHUNAN |TAHUNAN )?(.+?) warna (.+?) atas nama (.+)$/i)){r.vehicle=m[1];r.color=m[2];r.owner=m[3]}
   else if(m=n.match(/^HER STNK (?:5 )?tahunan (.+) an\. (.+)$/i)){var p=m[1].split(" ");r.color=p.length>1?p.pop():"";r.vehicle=p.join(" ");r.owner=m[2]}
   else if(m=n.match(/^HER SIM (?:an\.|atas nama) (.+)$/i))r.owner=m[1];
-  else if(m=n.match(/^Ulang tahun pernikahan (.+)$/i))r.owner=m[1];
-  else if(m=n.match(/^Ulang tahun (.+)$/i))r.owner=m[1];
   return r}
-function sig(){return[$("cat").value,$("owner").value,$("veh").value,$("col").value,$("title").value,$("five").value].join("|")}
+function sig(){return[$("cat").value,$("owner").value,$("veh").value,$("col").value,$("five").value].join("|")}
 function isStnk(c){return c==="stnk"}
 function jenisStnk(o){var y=parse(o.date).getFullYear();return o.five&&y>o.five&&(y-o.five)%5===0?"5 Tahunan":"Tahunan"}
 function lima(t){var y=today().getFullYear(),a=t+5*Math.max(1,Math.ceil((y-t)/5));return[a,a+5,a+10]}
 function buildName(o){var c=o.cat;
   if(isStnk(c))return "HER STNK "+jenisStnk(o)+" "+vname(o.vehicle)+" "+cap(o.color)+" an. "+o.owner.trim().toUpperCase();
-  if(c==="sim")return "HER SIM an. "+o.owner.trim().toUpperCase();
-  if(c==="ultah")return "Ulang tahun "+o.owner;
-  return "Ulang tahun pernikahan "+o.owner}
+  return "HER SIM an. "+o.owner.trim().toUpperCase()}
 function reset(){editId=null;keep=null;$("f").reset();$("grp").value=openG||"";setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;$("cancel2").hidden=true;hint()}
 $("cat").addEventListener("change",hint);$("five").addEventListener("change",hint);$("cancel").addEventListener("click",reset);$("cancel2").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
   var c=$("cat").value,st=isStnk(c),o={cat:c,five:c==="stnk"?(+$("five").value||0):0,owner:$("owner").value.trim(),vehicle:$("veh").value.trim(),color:$("col").value.trim(),date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
-  if(c==="lain"){o.owner="";o.name=$("title").value.trim()}
   if(!st){o.vehicle="";o.color=""}
-  if(c!=="lain")o.name=buildName(o);
+  o.name=buildName(o);
   if(keep&&keep.loose&&keep.cat===c&&sig()===keep.sig)o.name=keep.name;
   if(!o.name||!o.date)return;
   var rec;
