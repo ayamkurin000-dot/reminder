@@ -120,6 +120,9 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @media (prefers-reduced-motion:reduce){.bell svg,.bell .bdot{animation:none}}
 .prof{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
 .prof .pinfo{flex:1;min-width:0}.prof .pinfo b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prof .pinfo small{display:block;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prof .pleft{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}.prof .pinfo{width:100%}
+.prof .pright{display:flex;align-items:center;gap:10px;flex:none;max-width:55%;margin-left:auto}
+.pgrup{text-align:right;font-weight:700;font-size:.85rem;line-height:1.25;text-transform:uppercase;letter-spacing:.02em;word-break:break-word}
 .avbtn{position:relative;padding:0;border:0;border-radius:50%;width:56px;height:56px;flex:none;background:none}
 .avbtn img{width:56px;height:56px;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--line)}
 .avedit{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:var(--navy);color:var(--navy-ink);font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid var(--card)}
@@ -211,11 +214,10 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 </section>
 <div id="app" hidden>
 <div id="prof" class="prof">
-  <button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button>
-  <div class="pinfo"><b id="pnama"></b><small id="pemail"></small></div>
-  <button type="button" id="pedit">Ubah profil</button>
+  <div class="pleft"><div class="pinfo"><b id="pnama"></b><small id="pemail"></small></div><button type="button" id="pedit">Ubah profil</button></div>
+  <div class="pright"><span id="pgrup" class="pgrup" hidden></span><button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button></div>
 </div>
-<div class="psavebar"><button type="button" class="pri" id="psimpan" disabled>Simpan foto profil</button><span class="meta" id="pstat">Ketuk foto untuk mengganti.</span></div>
+<div class="psavebar" id="psavebar" hidden><button type="button" class="pri" id="psimpan" disabled>Simpan foto profil</button><span class="meta" id="pstat"></span></div>
 <section class="hero" aria-live="polite">
   <h1 id="today"></h1>
   <div id="alerts"></div>
@@ -404,8 +406,11 @@ $("pfoto").addEventListener("click",function(){FTARGET="profil";pilihFoto()});
 $("pimg").addEventListener("click",function(){FTARGET="profil";pilihFoto()});
 $("pjk").addEventListener("change",function(){if(!fotoNow())paintPm()});
 function paintProf(){$("avimg").src=fotoNow()||avDef(PROF.jk);paintPm();$("pnama").textContent=PROF.nama||"(nama belum diisi)";$("pemail").textContent=PROF.email||"";
+  var gl=myGrup&&GN[myGrup]?GN[myGrup]:(isAdmin?"Admin":"");$("pgrup").textContent=gl;$("pgrup").hidden=!gl;
   $("psimpan").disabled=PEND===undefined;
-  $("pstat").textContent=PEND===undefined?"Ketuk foto untuk mengganti.":"Foto diganti. Tekan Simpan untuk menyimpannya."}
+  if(PEND!==undefined){$("psavebar").hidden=false;$("pstat").textContent="Foto diganti. Tekan Simpan untuk menyimpannya."}
+  else if(!PSTAT){$("psavebar").hidden=true;$("pstat").textContent=""}}
+var PSTAT=false;
 function fotoKey(){return"foto-"+PROF.uid}
 async function loadProfil(user){var m=user.user_metadata||{};
   PROF={nama:m.nama||"",jk:m.jk||"",foto:"",uid:user.id,email:user.email||""};PEND=undefined;
@@ -483,8 +488,9 @@ cv().addEventListener("wheel",function(e){if(!E.img)return;e.preventDefault();se
 $("psimpan").addEventListener("click",async function(){if(PEND===undefined)return;var foto=PEND;this.disabled=true;$("pstat").textContent="Menyimpan…";
   try{if(foto)localStorage.setItem(fotoKey(),foto);else localStorage.removeItem(fotoKey())}catch(e){}
   var r=await sb.from("profil").upsert({user_id:PROF.uid,foto:foto||null});
-  PROF.foto=foto;PEND=undefined;paintProf();
-  $("pstat").textContent=r.error?"Foto hanya tersimpan di perangkat ini. Server menolak: "+r.error.message:"✓ Foto profil tersimpan."});
+  PROF.foto=foto;PEND=undefined;PSTAT=true;paintProf();$("psavebar").hidden=false;
+  $("pstat").textContent=r.error?"Foto hanya tersimpan di perangkat ini. Server menolak: "+r.error.message:"✓ Foto profil tersimpan.";
+  setTimeout(function(){PSTAT=false;if(PEND===undefined){$("psavebar").hidden=true;$("pstat").textContent=""}},r.error?6000:2500)});
 document.addEventListener("keydown",function(e){if(e.key!=="Escape")return;
   if(!$("lbox").hidden)$("lbox").hidden=true;else if(!$("fmodal").hidden)$("fmodal").hidden=true;else if(!$("pmodal").hidden)closeProf()});
 function today(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
