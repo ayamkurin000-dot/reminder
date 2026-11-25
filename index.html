@@ -109,14 +109,29 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 
 .alert:nth-of-type(10n+1) .num.urg{animation-delay:-0.37s}.alert:nth-of-type(10n+2) .num.urg{animation-delay:-0.74s}.alert:nth-of-type(10n+3) .num.urg{animation-delay:-0.11s}.alert:nth-of-type(10n+4) .num.urg{animation-delay:-0.48s}.alert:nth-of-type(10n+5) .num.urg{animation-delay:-0.85s}.alert:nth-of-type(10n+6) .num.urg{animation-delay:-0.22s}.alert:nth-of-type(10n+7) .num.urg{animation-delay:-0.59s}.alert:nth-of-type(10n+8) .num.urg{animation-delay:-0.96s}.alert:nth-of-type(10n+9) .num.urg{animation-delay:-0.33s}.alert:nth-of-type(10n+10) .num.urg{animation-delay:-0.70s}
 @media (prefers-reduced-motion:reduce){.num.urg,.num.wig,.alert .blink{animation:none}}
+#inst{position:relative;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--navy);border-radius:12px;padding:14px 40px 14px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+#inst[hidden]{display:none}
+.insth{display:block;font-size:17px;margin-bottom:6px}
+.instl{margin:0 0 12px;padding-left:20px;font-size:15px}.instl li{margin:3px 0}
+.insta{display:flex;gap:8px;flex-wrap:wrap}
+#inst .meta{margin-top:10px}
+.instx{position:absolute;top:6px;right:6px;width:34px;height:34px;padding:0;border:0;font-size:24px;line-height:1;color:var(--mute);border-radius:50%}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <main>
-<div id="inst" class="item ok" hidden style="align-items:center">
-  <div><b>Pasang di HP</b><div class="meta" id="insttxt">Buka agenda langsung dari layar utama, seperti aplikasi.</div></div>
-  <button class="pri" id="instbtn">Pasang</button>
+<div id="inst" hidden role="region" aria-label="Pasang aplikasi">
+  <button type="button" id="instx" class="instx" aria-label="Tutup">&times;</button>
+  <b class="insth">📲 Pasang aplikasinya di HP kamu</b>
+  <ul class="instl">
+    <li><b>Buka sekali ketuk</b> dari layar utama, tanpa mengetik link lagi.</li>
+    <li><b>Tampil layar penuh</b> seperti aplikasi biasa, tanpa bilah browser.</li>
+    <li><b>Tetap terbuka saat sinyal buruk</b>: agenda terakhir tetap bisa dilihat.</li>
+    <li><b>Ringan dan gratis</b>: tidak perlu Play Store atau App Store, hampir tanpa memakan memori.</li>
+  </ul>
+  <div class="insta"><button class="pri" id="instbtn" type="button">Pasang sekarang</button><button type="button" id="instlater">Nanti saja</button></div>
+  <div class="meta" id="insttxt" hidden></div>
 </div>
 <a class="alq" href="https://ayamkurin000-dot.github.io/alquran4all/" target="_blank" rel="noopener" aria-label="Buka Alquran4All">
   <span class="alq-top"><span class="alq-face">
@@ -415,12 +430,17 @@ function setD(str){var p=str.split("-");
   $("dd").value=+p[2];$("dm").value=+p[1];$("dy").value=+p[0]}
 function getD(){var y=+$("dy").value,m=+$("dm").value,d=+$("dd").value,mx=new Date(y,m,0).getDate();
   if(d>mx)d=mx;return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
-var dp=null;
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;$("inst").hidden=false});
-$("instbtn").addEventListener("click",function(){if(dp){dp.prompt();dp=null;$("inst").hidden=true}});
+var dp=null,isIos=/iphone|ipad|ipod/i.test(navigator.userAgent),isApp=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+function instClosed(){try{return sessionStorage.getItem("inst-tutup")==="1"}catch(e){return false}}
+function instClose(){$("inst").hidden=true;try{sessionStorage.setItem("inst-tutup","1")}catch(e){}}
+if(!isApp&&!instClosed())$("inst").hidden=false;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e});
+$("instbtn").addEventListener("click",function(){
+  if(dp){dp.prompt();dp.userChoice.then(function(c){if(c&&c.outcome==="accepted")instClose()},function(){});dp=null;return}
+  var t=$("insttxt");t.hidden=false;
+  t.textContent=isIos?"Di Safari, ketuk tombol Bagikan lalu pilih “Tambah ke Layar Utama”.":"Buka menu browser (titik tiga di pojok kanan atas), lalu pilih “Pasang aplikasi” atau “Tambahkan ke layar utama”."});
+$("instx").addEventListener("click",instClose);$("instlater").addEventListener("click",instClose);
 window.addEventListener("appinstalled",function(){$("inst").hidden=true});
-if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!navigator.standalone){
-  $("inst").hidden=false;$("insttxt").textContent="Di Safari, ketuk tombol Bagikan lalu pilih “Tambah ke Layar Utama”.";$("instbtn").hidden=true}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))
   window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){})});
 (function(){var g=urlGrup(),t=$("gtag");if(g){t.textContent="Kelompok: "+GN[g];t.hidden=false}
