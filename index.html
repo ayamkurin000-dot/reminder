@@ -443,14 +443,19 @@ function getD(){var y=+$("dy").value,m=+$("dm").value,d=+$("dd").value,mx=new Da
 var dp=null,isIos=/iphone|ipad|ipod/i.test(navigator.userAgent),isApp=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
 function instClosed(){try{return sessionStorage.getItem("inst-tutup")==="1"}catch(e){return false}}
 function instClose(){$("inst").hidden=true;try{sessionStorage.setItem("inst-tutup","1")}catch(e){}}
-if(!isApp&&!instClosed())$("inst").hidden=false;
+/* Tandai perangkat ini sudah memasang aplikasi: notifikasi pasang tidak pernah muncul lagi, termasuk saat buka lewat link di browser. */
+function tandaiTerpasang(){try{localStorage.setItem("app-terpasang","1")}catch(e){}$("inst").hidden=true}
+function sudahTerpasang(){try{return localStorage.getItem("app-terpasang")==="1"}catch(e){return false}}
+if(isApp)tandaiTerpasang();
+if(!isApp&&!sudahTerpasang()&&!instClosed())$("inst").hidden=false;
+if(!isApp&&navigator.getInstalledRelatedApps)navigator.getInstalledRelatedApps().then(function(a){if(a&&a.length)tandaiTerpasang()}).catch(function(){});
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e});
 $("instbtn").addEventListener("click",function(){
-  if(dp){dp.prompt();dp.userChoice.then(function(c){if(c&&c.outcome==="accepted")instClose()},function(){});dp=null;return}
+  if(dp){dp.prompt();dp.userChoice.then(function(c){if(c&&c.outcome==="accepted")tandaiTerpasang()},function(){});dp=null;return}
   var t=$("insttxt");t.hidden=false;
   t.textContent=isIos?"Di Safari, ketuk tombol Bagikan lalu pilih “Tambah ke Layar Utama”.":"Buka menu browser (titik tiga di pojok kanan atas), lalu pilih “Pasang aplikasi” atau “Tambahkan ke layar utama”."});
 $("instx").addEventListener("click",instClose);$("instlater").addEventListener("click",instClose);
-window.addEventListener("appinstalled",function(){$("inst").hidden=true});
+window.addEventListener("appinstalled",tandaiTerpasang);
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))
   window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){})});
 (function(){var g=urlGrup(),t=$("gtag");if(g){t.textContent="Kelompok: "+GN[g];t.hidden=false}
