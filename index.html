@@ -58,6 +58,32 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alert .five{color:#ffee00;font-weight:900;font-size:1.25em;text-shadow:0 0 6px #ffee00,0 0 14px #ffd000}.alert .j{color:#ffd166;font-weight:700}.alert .v{color:#7dd3fc}.alert .n{color:#86efac;font-weight:700}
 .num.urg{color:#ff6b6b;animation:kedip 1s ease-in-out infinite}
 @keyframes kedip{50%{opacity:.15}}
+.alq{position:relative;display:block;padding-bottom:9px;margin:4px 0 20px;text-decoration:none;color:#fff;-webkit-tap-highlight-color:transparent}
+.alq::after{content:"";position:absolute;left:0;right:0;top:10px;bottom:0;border-radius:22px;background:linear-gradient(180deg,#05204f,#031233);box-shadow:0 12px 22px rgba(0,20,70,.45)}
+.alq-top{position:relative;z-index:1;display:block;border-radius:22px;overflow:hidden;padding:3px;transition:transform .09s ease;box-shadow:0 0 22px rgba(0,229,255,.55);animation:alqglow 1.3s ease-in-out infinite alternate}
+.alq-top::before{content:"";position:absolute;left:50%;top:50%;width:220%;aspect-ratio:1;background:conic-gradient(#00e5ff,#ffffff,#7c4dff,#00e5ff,#ffffff,#ff2bd6,#00e5ff);animation:alqputar 2.2s linear infinite}
+.alq:active .alq-top{transform:translateY(7px)}
+.alq:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:22px}
+.alq-face{position:relative;z-index:1;display:flex;align-items:center;gap:14px;border-radius:19px;padding:18px 18px;overflow:hidden;background:linear-gradient(180deg,#2f86ff 0%,#0f4fd8 52%,#082b97 100%);box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -5px 12px rgba(0,0,40,.45)}
+.alq-face::before{content:"";position:absolute;left:0;right:0;top:0;height:48%;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,.04));border-radius:19px 19px 60% 60%/19px 19px 22px 22px;pointer-events:none}
+.alq-ic{position:relative;font-size:34px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,60,.6));flex:none}
+.alq-t{position:relative;flex:1;display:flex;flex-direction:column;gap:1px;text-align:left}
+.alq-t b{font-family:Archivo,system-ui,sans-serif;font-weight:800;font-size:21px;letter-spacing:.3px;text-shadow:0 0 10px #00e5ff,0 2px 0 rgba(0,0,60,.55)}
+.alq-t small{font-size:13px;opacity:.9;font-weight:600}
+.alq-go{position:relative;font-size:26px;font-weight:800;text-shadow:0 0 10px #00e5ff;animation:alqgeser 1s ease-in-out infinite alternate}
+.bolt{position:absolute;width:26px;height:44px;fill:#e8fdff;filter:drop-shadow(0 0 4px #00e5ff) drop-shadow(0 0 9px #00b8ff);opacity:0;pointer-events:none}
+.bolt.b1{left:4px;top:-2px;animation:alqkilat 2.6s infinite}
+.bolt.b2{right:52px;top:4px;transform:scaleX(-1) rotate(8deg);animation:alqkilat 3.1s .7s infinite}
+.bolt.b3{left:46%;bottom:-4px;width:20px;height:34px;transform:rotate(180deg);animation:alqkilat 2.9s 1.4s infinite}
+.sp{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #00e5ff;opacity:0;pointer-events:none;animation:alqpercik 1.8s infinite}
+.sp.s1{left:20%;top:16%}.sp.s2{left:62%;top:78%;animation-delay:.5s}.sp.s3{left:84%;top:22%;animation-delay:1s}.sp.s4{left:36%;top:84%;animation-delay:1.4s}
+@keyframes alqputar{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes alqglow{from{box-shadow:0 0 12px rgba(0,229,255,.4)}to{box-shadow:0 0 28px 4px rgba(0,229,255,.85)}}
+@keyframes alqkilat{0%,14%,100%{opacity:0}15%{opacity:1}17%{opacity:.15}19%{opacity:1}23%{opacity:0}60%{opacity:0}61%{opacity:.9}63%{opacity:0}}
+@keyframes alqpercik{0%,100%{opacity:0;transform:scale(.4)}45%{opacity:1;transform:scale(1.5)}70%{opacity:0}}
+@keyframes alqgeser{to{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.alq-top,.alq-top::before,.alq-go,.bolt,.sp{animation:none}.alq-top::before{transform:translate(-50%,-50%)}}
+
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:8px}
 .fcard{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:112px;position:relative}
 .fcard .ic{font-size:28px;line-height:1}.fcard b{font-family:Archivo,system-ui,sans-serif;font-size:16px;margin-top:6px}.fcard .meta{color:var(--mute);font-size:13px}
@@ -92,6 +118,14 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <div><b>Pasang di HP</b><div class="meta" id="insttxt">Buka agenda langsung dari layar utama, seperti aplikasi.</div></div>
   <button class="pri" id="instbtn">Pasang</button>
 </div>
+<a class="alq" href="https://ayamkurin000-dot.github.io/alquran4all/" target="_blank" rel="noopener" aria-label="Buka Alquran4All">
+  <span class="alq-top"><span class="alq-face">
+    <svg class="bolt b1" viewBox="0 0 24 40" aria-hidden="true"><polygon points="14,0 3,22 11,22 7,40 21,15 12,15"/></svg><svg class="bolt b2" viewBox="0 0 24 40" aria-hidden="true"><polygon points="14,0 3,22 11,22 7,40 21,15 12,15"/></svg><svg class="bolt b3" viewBox="0 0 24 40" aria-hidden="true"><polygon points="14,0 3,22 11,22 7,40 21,15 12,15"/></svg><i class="sp s1"></i><i class="sp s2"></i><i class="sp s3"></i><i class="sp s4"></i>
+    <span class="alq-ic" aria-hidden="true">📖</span>
+    <span class="alq-t"><b>Buka Alquran4All</b><small>Ketuk di sini untuk membuka</small></span>
+    <span class="alq-go" aria-hidden="true">➜</span>
+  </span></span>
+</a>
 <section id="auth" hidden>
 <div class="hero" aria-live="polite"><h1>Pengumuman</h1><div id="pubalerts"><p class="aman">Memuat…</p></div></div>
 <h2>Masuk ke Pengingat Agenda</h2>
