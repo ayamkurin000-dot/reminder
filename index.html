@@ -79,8 +79,10 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <form id="af">
   <label>Email<input id="em" type="email" required autocomplete="email"></label>
   <label>Kata sandi (min. 6 karakter)<input id="pw" type="password" required minlength="6" autocomplete="current-password"></label>
+  <label id="lbl-pw2" hidden>Ulangi kata sandi<input id="pw2" type="password" minlength="6" autocomplete="new-password"></label>
+  <label class="cek" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="showpw" style="width:auto"> Tampilkan kata sandi</label>
   <p class="err" id="aerr" role="alert"></p>
-  <div><button class="pri" type="submit">Masuk</button> <button type="button" id="signup">Daftar akun baru</button></div>
+  <div><button class="pri" type="submit" id="loginbtn">Masuk</button> <button type="button" id="signup">Daftar akun baru</button> <button type="button" id="backlogin" hidden>Sudah punya akun? Masuk</button></div>
 </form>
 </section>
 <div id="app" hidden>
@@ -162,12 +164,23 @@ async function initDb(){
   sb=supabase.createClient(SB_URL,SB_KEY);
   sb.auth.onAuthStateChange(function(ev,ses){if(ses){isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);var h=$("h-all");if(h)h.textContent=isAdmin?"Semua agenda (semua pengguna · admin)":"Semua agenda";show(true);loadRows()}else{isAdmin=false;items=[];show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
-$("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;$("aerr").textContent="";
+var regMode=false;
+function setReg(on){regMode=on;$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("pw2").focus()}
+$("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
+$("backlogin").addEventListener("click",function(){setReg(false)});
+async function doSignup(){if(!sb)return;$("aerr").textContent="";
+  if(!$("em").value||!$("em").checkValidity()){$("aerr").textContent="Isi email dengan benar.";return}
+  if($("pw").value.length<6){$("aerr").textContent="Kata sandi minimal 6 karakter.";return}
+  if($("pw").value!==$("pw2").value){$("aerr").textContent="Kata sandi dan ulangannya tidak sama. Periksa lagi.";return}
+  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value});
+  if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
+  if(!r.data.session){$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk.";setReg(false);$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk."}}
+$("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;
+  if(regMode){doSignup();return}
+  $("aerr").textContent="";
   var r=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
   if(r.error)$("aerr").textContent="Gagal masuk: "+r.error.message});
-$("signup").addEventListener("click",async function(){if(!sb)return;$("aerr").textContent="";
-  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value});
-  $("aerr").textContent=r.error?"Gagal daftar: "+r.error.message:(r.data.session?"":"Akun dibuat. Cek email untuk konfirmasi, lalu masuk.")});
+$("signup").addEventListener("click",function(){if(!regMode){setReg(true);return}doSignup()});
 $("logout").addEventListener("click",function(){sb.auth.signOut()});
 function today(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
 function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
