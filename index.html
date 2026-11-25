@@ -231,6 +231,9 @@ function info(it){var n=nextDate(it),left=Math.round((n-today())/864e5),st="ok",
 function numCls(l){return l<=5?" urg":l<10?" wig":""}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function gk(it){return okG(it.grup)}
+function defGrup(){if(myGrup)return myGrup;var c={},best="",n=0;
+  items.forEach(function(it){var g=gk(it);if(g)c[g]=(c[g]||0)+1});
+  Object.keys(c).forEach(function(g){if(c[g]>n){n=c[g];best=g}});return best}
 function renderFolders(rows){
   var box=$("folders"),back=$("fback"),hAll=$("h-all"),list=$("list");
   if(!isAdmin){box.innerHTML="";back.hidden=true;hAll.hidden=false;list.hidden=false;hAll.textContent="Semua agenda";return}
@@ -244,7 +247,7 @@ function renderFolders(rows){
     return '<button type="button" class="fcard'+(hot.length?' hot soon':soon.length?' soon':'')+'" data-g="'+esc(g[0])+'"><span class="ic">'+(soon.length?'🔔':'📁')+'</span><b>'+esc(g[1])+'</b><span class="meta">'+rs.length+' agenda</span>'
       +(soon.length?'<span class="tag">'+soon.length+' ≤ 30 hari</span>':'')+'</button>'}).join("")+'</div>'}
 function render(){
-  $("today").textContent="Hari ini, "+fmt(today())+(myGrup?" · "+GN[myGrup]:"");
+  $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){return{it:it,i:info(it)}}).sort(function(a,b){return a.i.left-b.i.left});
   var al=rows.filter(function(r){return r.i.st!=="ok"});
   $("alerts").innerHTML=al.length?al.map(function(r){
@@ -314,7 +317,7 @@ $("f").addEventListener("submit",function(e){e.preventDefault();
   var rec;
   if(isAdmin)o.grup=$("grp").value;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
-  else{o.id=Date.now();if(!isAdmin)o.grup=myGrup;items.push(o);rec=o}
+  else{o.id=Date.now();if(!isAdmin)o.grup=defGrup();items.push(o);rec=o}
   put(rec);reset();render()});
 function opt(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;return o}
 function buildDate(){
