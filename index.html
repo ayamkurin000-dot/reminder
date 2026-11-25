@@ -171,7 +171,9 @@ var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXN
 function setSync(t){$("sync").textContent=t}
 function fail(e){setSync("Gagal menyimpan: "+(e&&e.message?e.message:"periksa koneksi")+".")}
 function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||"",publik:!!it.publik,owner:it.owner||"",vehicle:it.vehicle||"",color:it.color||"",five:it.five||0,grup:it.grup||""}}
-function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){if(r.error)fail(r.error)})}
+function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){
+  if(r.error&&/grup/i.test(r.error.message||"")){var c=clean(it);delete c.grup;sb.from("agenda").upsert(c).then(function(r2){if(r2.error)fail(r2.error)});return}
+  if(r.error)fail(r.error)})}
 function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
 function show(on){$("auth").hidden=on;$("app").hidden=!on}
 async function loadRows(){
@@ -181,9 +183,10 @@ async function loadRows(){
 async function loadPublic(){
   var g=urlGrup(),q=sb.from("agenda").select("id,name,cat,date,lead,note,grup").eq("publik",true);
   if(g)q=q.eq("grup",g);
-  var r=await q,box=$("pubalerts");
+  var r=await q,box=$("pubalerts"),noCol=false;
+  if(r.error&&!g){noCol=true;r=await sb.from("agenda").select("id,name,cat,date,lead,note").eq("publik",true)}
   $("auth").querySelector(".hero h1").textContent="Pengumuman"+(g?" · "+GN[g]:"");
-  if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p>';return}
+  if(r.error){box.innerHTML='<p class="aman">Pengumuman belum bisa dimuat.</p><p style="margin:8px 0 0;font-size:13px;opacity:.7">'+esc(r.error.message||"")+'</p>';return}
   var al=norm(r.data).map(function(it){return{it:it,i:info(it)}}).filter(function(x){return x.i.st!=="ok"}).sort(function(a,b){return a.i.left-b.i.left});
   box.innerHTML=al.length?al.map(function(x){var n=x.i.left<0?"−"+(-x.i.left):x.i.left;
     return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" · "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" · "+esc(x.it.note):"")+'</small></div></div>'}).join("")
