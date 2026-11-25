@@ -160,6 +160,24 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @keyframes kosongterbang{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
 @keyframes kosongwarna{to{background-position:-300% 0}}
 @media (prefers-reduced-motion:reduce){.demo,.kosong .kic,.kosong b{animation:none}}
+#toastok{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:9999;transform:translate(-50%,-160%);opacity:0;pointer-events:none;display:flex;align-items:center;gap:12px;min-width:260px;max-width:calc(100vw - 24px);padding:14px 22px 18px 14px;border-radius:16px;background:linear-gradient(135deg,#065f46,#16a34a);color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.18);transition:transform .5s cubic-bezier(.2,1.4,.4,1),opacity .25s}
+#toastok.show{transform:translate(-50%,0);opacity:1;pointer-events:auto;cursor:pointer}
+#toastok .tck{width:46px;height:46px;flex:none}
+#toastok .tc{fill:rgba(255,255,255,.14);stroke:#bbf7d0;stroke-width:3;stroke-dasharray:145;stroke-dashoffset:145}
+#toastok .tp{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40}
+#toastok.show .tc{animation:tgambar .6s ease-out .1s forwards}
+#toastok.show .tp{animation:tgambar .4s ease-out .55s forwards}
+#toastok.show .tck{animation:tmembal .5s ease-out .5s}
+#toastok b{display:block;font-size:18px;font-weight:800}#toastok small{display:block;opacity:.92}
+#toastok .tbar{position:absolute;left:14px;right:14px;bottom:7px;height:3px;border-radius:3px;background:rgba(255,255,255,.7);transform-origin:left}
+#toastok.show .tbar{animation:tbar 3.2s linear forwards}
+#toastok .cf{position:absolute;left:37px;top:50%;width:8px;height:8px;border-radius:50%;opacity:0}
+#toastok.show .cf{animation:tcf .9s ease-out .55s forwards}
+@keyframes tgambar{to{stroke-dashoffset:0}}
+@keyframes tmembal{50%{transform:scale(1.25)}}
+@keyframes tbar{to{transform:scaleX(0)}}
+@keyframes tcf{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
+@media (prefers-reduced-motion:reduce){#toastok,#toastok .tc,#toastok .tp,#toastok .tck,#toastok .tbar,#toastok .cf{animation:none!important;transition:none}#toastok .tc,#toastok .tp{stroke-dashoffset:0}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -312,9 +330,9 @@ var SB_URL="https://besfvlmwsksuhryizlev.supabase.co",SB_KEY="sb_publishable_zXN
 function setSync(t){$("sync").textContent=t}
 function fail(e){setSync("Gagal menyimpan: "+(e&&e.message?e.message:"periksa koneksi")+".")}
 function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.lead,note:it.note||"",publik:!!it.publik,owner:it.owner||"",vehicle:it.vehicle||"",color:it.color||"",five:it.five||0,grup:it.grup||"",senyap:it.senyap||""}}
-function put(it){sb.from("agenda").upsert(clean(it)).then(function(r){
-  if(r.error&&/grup|senyap/i.test(r.error.message||"")){var c=clean(it);delete c.grup;delete c.senyap;sb.from("agenda").upsert(c).then(function(r2){if(r2.error)fail(r2.error)});return}
-  if(r.error)fail(r.error)})}
+function put(it,ok){sb.from("agenda").upsert(clean(it)).then(function(r){
+  if(r.error&&/grup|senyap/i.test(r.error.message||"")){var c=clean(it);delete c.grup;delete c.senyap;sb.from("agenda").upsert(c).then(function(r2){if(r2.error)fail(r2.error);else if(ok)ok()});return}
+  if(r.error)fail(r.error);else if(ok)ok()})}
 function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
 function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;
   /* Kartu Al-Qur'an (dan notifikasi pasang) selalu tepat di bawah jendela pengumuman, baik sebelum maupun sesudah login. */
@@ -527,6 +545,14 @@ function renderFolders(rows){
     var rs=rows.filter(function(r){return gk(r.it)===g[0]}),mt=rs.filter(function(r){return r.mute}),soon=rs.filter(function(r){return r.i.left<ADMIN_HARI&&!r.mute}),hot=soon.filter(function(r){return r.i.left<=5});
     return '<div class="fw"><button type="button" class="fcard'+(hot.length?' hot soon':soon.length?' soon':'')+'" data-g="'+esc(g[0])+'"><span class="ic">'+(soon.length?'🔔':'📁')+'</span><b>'+esc(g[1])+'</b><span class="meta">'+rs.length+' agenda</span>'
       +(soon.length?'<span class="tag">'+soon.length+' &lt; '+ADMIN_HARI+' hari</span>':'')+(mt.length?'<span class="meta">🔕 '+mt.length+' senyap</span>':'')+'</button>'+(g[0]?'<button type="button" class="flink" data-copy="'+esc(g[0])+'">🔗 Salin link</button>':'')+'</div>'}).join("")+'</div>'}
+var toastT;
+function notifSimpan(edit){
+  var el=document.getElementById("toastok");
+  if(!el){el=document.createElement("div");el.id="toastok";el.setAttribute("role","status");el.setAttribute("aria-live","polite");document.body.appendChild(el);el.addEventListener("click",function(){el.className=""})}
+  clearTimeout(toastT);el.className="";void el.offsetWidth;
+  var cf=[["-70px","-46px","#ffd166"],["-30px","-60px","#7dd3fc"],["10px","-56px","#fff"],["50px","-44px","#ffd166"],["-62px","40px","#fff"],["-20px","56px","#7dd3fc"],["30px","52px","#ffd166"],["66px","30px","#fff"]].map(function(c){return'<span class="cf" style="--x:'+c[0]+';--y:'+c[1]+';background:'+c[2]+'"></span>'}).join("");
+  el.innerHTML='<svg class="tck" viewBox="0 0 52 52" aria-hidden="true"><circle class="tc" cx="26" cy="26" r="23"/><path class="tp" d="M15 27l8 8 14-16"/></svg><div class="tt"><b>Berhasil menyimpan</b><small>'+(edit?"Perubahan agenda sudah tersimpan.":"Agenda baru sudah ditambahkan.")+'</small></div><i class="tbar"></i>'+cf;
+  el.className="show";toastT=setTimeout(function(){el.className=""},3200)}
 function kosongHtml(sub){return'<div class="kosong"><span class="kic" aria-hidden="true">\ud83d\uddd3\ufe0f</span><b>Belum ada agenda</b><small>'+sub+'</small></div>'}
 function render(){
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
@@ -601,7 +627,7 @@ $("f").addEventListener("submit",function(e){e.preventDefault();
   if(isAdmin)o.grup=$("grp").value;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
   else{o.id=Date.now();if(!isAdmin)o.grup=defGrup();items.push(o);rec=o}
-  put(rec);reset();render()});
+  var wasEdit=!!editId;put(rec,function(){notifSimpan(wasEdit)});reset();render()});
 function opt(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;return o}
 function buildDate(){
   var y=today().getFullYear(),i;
