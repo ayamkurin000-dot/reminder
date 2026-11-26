@@ -420,7 +420,8 @@ async function loadPublic(){
      Agenda asli tetap tampil sampai pemiliknya menekan "Sudah diperpanjang" (jatuh tempo maju) atau menghapusnya. Lama pengingat (lead) tidak berpengaruh. */
   var mendesak=all.some(function(x){return x.i.left<AMBANG_ASLI});
   var pm=mendesak?[]:permaItems();PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^.* an\. /,"").toLowerCase()});
-  var db=all.filter(function(x){return!isPerma(x.it)});
+  /* Agenda asli selalu ditampilkan. Kartu DEMO hanya disingkirkan kalau ada agenda asli dengan nama PERSIS sama (bukan sekadar mengandung nama depan yang sama). */
+  var db=all;pm=pm.filter(function(p){var pn=p.name.toLowerCase();return!all.some(function(x){return(x.it.name||"").toLowerCase()===pn})});PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^.* an\. /,"").toLowerCase()});
   var al=db.concat(pm.map(function(it){return{it:it,i:info(it)}})).filter(function(x){return x.it.perma||x.i.st!=="ok"||x.i.left<AMBANG_ASLI}).sort(function(a,b){return a.i.left-b.i.left});
   var errHtml=r.error?'<p style="margin:0 0 10px;font-size:13px;opacity:.7">Pengumuman lain belum bisa dimuat: '+esc(r.error.message||"")+'</p>':"";
   box.innerHTML=errHtml+al.map(function(x){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
