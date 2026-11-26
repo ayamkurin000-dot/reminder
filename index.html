@@ -649,8 +649,11 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
     $("owner").value=it.owner||pr.owner||"";$("veh").value=it.vehicle||pr.vehicle||"";setCol(it.color||pr.color||"");
     var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:[$("owner").value],loose=need.some(function(x){return!x});
     $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
+var DEFNOTE={stnk:"Rp. 120.000, KTP & STNK & BPKB asli",sim:"e-KTP asli dan fotokopinya"},noteAuto="";
 function hint(){var c=$("cat").value,st=isStnk(c);
-  $("note").placeholder=c==="sim"?"Contoh: e-KTP asli dan fotokopinya":"Contoh: Rp. 120.000, KTP & STNK & BPKB asli";
+  /* Catatan terisi otomatis dengan teks contoh (bisa diedit). Tidak diubah kalau pengguna sudah mengetik/menghapusnya sendiri. */
+  var dn=DEFNOTE[c]||"",nt=$("note");nt.placeholder="Contoh: "+dn;
+  if(!editId&&nt.value===noteAuto){nt.value=dn;noteAuto=dn}
   $("hint").textContent=HINT[c]+""+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
   var lo=!!(keep&&keep.loose&&keep.cat===c);
   $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk"&&!lo;
@@ -680,7 +683,7 @@ function lima(t){var y=today().getFullYear(),a=t+5*Math.max(1,Math.ceil((y-t)/5)
 function buildName(o){var c=o.cat;
   if(isStnk(c))return "HER STNK "+jenisStnk(o)+" "+vname(o.vehicle)+" "+cap(o.color)+" an. "+o.owner.trim().toUpperCase();
   return "HER SIM an. "+o.owner.trim().toUpperCase()}
-function reset(){editId=null;keep=null;$("f").reset();$("grp").value=openG||"";setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;$("cancel2").hidden=true;hint()}
+function reset(){editId=null;keep=null;$("f").reset();noteAuto="";$("grp").value=openG||"";setD(iso(today()));$("lead").value="30";$("ftitle").textContent="Tambah agenda";$("save").textContent="Simpan agenda";$("cancel").hidden=true;$("cancel2").hidden=true;hint()}
 $("cat").addEventListener("change",hint);$("five").addEventListener("change",hint);$("cancel").addEventListener("click",reset);$("cancel2").addEventListener("click",reset);
 $("f").addEventListener("submit",function(e){e.preventDefault();
   var c=$("cat").value,st=isStnk(c),o={cat:c,five:c==="stnk"?(+$("five").value||0):0,owner:$("owner").value.trim(),vehicle:$("veh").value.trim(),color:$("col").value.trim(),date:getD(),lead:+$("lead").value,note:$("note").value.trim(),publik:$("pub").checked};
