@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Agenda">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Archivo:wght@500;700;800&family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#16202e;--mute:#5d6878;--line:#d9dde4;--navy:#1d3557;--navy-ink:#fff;--warn:#b86e00;--warnbg:#fff3d6;--bad:#b3261e;--badbg:#fde4e1;--ok:#23704f;--okbg:#e0f2ea;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -230,6 +230,67 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 /* Animasi notifikasi simpan sengaja TIDAK dimatikan oleh prefers-reduced-motion: hanya sekali ~3 detik, dan harus terlihat di semua perangkat. */
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style id="futuristik">
+/* ===== Kartu Al-Qur'an: ringkas supaya form login terlihat tanpa geser ===== */
+.alq{gap:6px;padding:8px 10px 10px;margin:0 0 12px}
+.alq-top,.alq-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;flex:none}
+.alq-ic,.alq-ic .star{width:46px;height:46px}
+.alq-ic .bk{width:22px;height:22px}
+.alq-t{align-items:center;text-align:center;gap:0}
+.alq-ar{font-size:30px;line-height:1.35;padding:0;text-align:center}
+.alq-t small{font-size:12px;line-height:1.2}
+.alq-logo{position:relative;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 35% 28%,#14805e,#06382a 72%);border:1.5px solid #e8c766;box-shadow:0 0 0 2px #06382a,0 0 0 3px rgba(232,199,102,.6),0 0 12px rgba(232,199,102,.4)}
+.alq-logo::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1px dashed rgba(232,199,102,.6);animation:alqspin 18s linear infinite}
+.alq-logo b{position:relative;display:flex;flex-direction:column;align-items:center;line-height:1;font-family:Georgia,"Times New Roman",serif;font-weight:700;transform:rotate(-12deg) skewX(-10deg);background:linear-gradient(180deg,#fff6b8,#f4d36b 50%,#b9892b);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.alq-logo b span{font-size:11px;letter-spacing:1.5px}
+.alq-logo b em{font-size:14px;font-style:italic;letter-spacing:.2px}
+.alq-photo{border-radius:10px}
+.alq-photo img{aspect-ratio:2/1;object-position:50% 60%}
+@media (min-width:560px){.alq{flex-direction:column;align-items:stretch;gap:6px}.alq-top{flex:none;flex-direction:initial}.alq-photo{flex:none}.alq-photo img{aspect-ratio:2/1}}
+
+/* ===== Form Login futuristik ===== */
+#auth{--c1:#00e5ff;--c2:#8a5cff;--c3:#ff2fd6;position:relative;max-width:560px;margin:0 auto 24px;padding:14px 14px 14px;border-radius:10px;color:#d8f6ff;font-family:Rajdhani,"Source Sans 3",system-ui,sans-serif;isolation:isolate;overflow:hidden;
+ background:linear-gradient(rgba(0,229,255,.05) 1px,transparent 1px) 0 0/100% 22px,linear-gradient(90deg,rgba(0,229,255,.05) 1px,transparent 1px) 0 0/22px 100%,radial-gradient(120% 90% at 100% 0%,rgba(138,92,255,.30),transparent 60%),radial-gradient(100% 80% at 0% 100%,rgba(0,229,255,.20),transparent 60%),#060b18;
+ border:1px solid rgba(0,229,255,.6);box-shadow:0 0 0 1px rgba(138,92,255,.3),0 0 22px rgba(0,229,255,.28),inset 0 0 30px rgba(0,229,255,.08);animation:neonb 6s ease-in-out infinite}
+#auth>*{position:relative;z-index:1}
+#auth::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;z-index:0;pointer-events:none;background:linear-gradient(90deg,transparent,var(--c1),transparent);box-shadow:0 0 14px var(--c1);animation:scan 4.5s linear infinite}
+#auth::after{content:"";position:absolute;inset:5px;z-index:0;pointer-events:none;background:linear-gradient(var(--c1),var(--c1)) top left/16px 2px,linear-gradient(var(--c1),var(--c1)) top left/2px 16px,linear-gradient(var(--c1),var(--c1)) top right/16px 2px,linear-gradient(var(--c1),var(--c1)) top right/2px 16px,linear-gradient(var(--c1),var(--c1)) bottom left/16px 2px,linear-gradient(var(--c1),var(--c1)) bottom left/2px 16px,linear-gradient(var(--c1),var(--c1)) bottom right/16px 2px,linear-gradient(var(--c1),var(--c1)) bottom right/2px 16px;background-repeat:no-repeat;opacity:.9}
+#auth h2{margin:0 0 10px;text-align:center;font:800 20px Orbitron,Archivo,sans-serif;letter-spacing:8px;text-indent:8px;text-transform:uppercase;color:#fff;text-shadow:0 0 6px var(--c1),0 0 18px var(--c1);animation:glitch 5s steps(1) infinite}
+#auth form{display:grid;grid-template-columns:1fr;gap:8px;background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;margin:0}
+#auth label{display:flex;flex-direction:column;gap:3px;margin:0;font:600 12px Rajdhani,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#7fdcf0}
+#auth input:not([type=checkbox]),#auth select{width:100%;min-height:40px;padding:7px 10px;font:500 16px Rajdhani,"Source Sans 3",sans-serif;letter-spacing:.6px;color:#eafcff;caret-color:var(--c1);background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.35);border-radius:4px;outline:0;transition:border-color .2s,box-shadow .2s,background .2s}
+#auth input:not([type=checkbox]):focus,#auth select:focus{border-color:var(--c1);background:rgba(0,229,255,.11);box-shadow:0 0 0 1px var(--c1),0 0 14px rgba(0,229,255,.55),inset 0 0 10px rgba(0,229,255,.15)}
+#auth input:-webkit-autofill{-webkit-box-shadow:0 0 0 100px #0a1628 inset;-webkit-text-fill-color:#eafcff}
+#auth select option{background:#0a1628;color:#eafcff}
+#auth input[type=checkbox]{accent-color:var(--c1);width:16px;height:16px}
+#auth .cek{flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:.8px;font-size:14px;color:#9fe8f8}
+#auth .meta,#auth .sfoto .meta{color:#7fdcf0}
+#auth .err{margin:0;min-height:0;font:600 14px Rajdhani,sans-serif;color:#ff6b9d;text-shadow:0 0 8px rgba(255,47,214,.6)}
+#auth .err:empty{display:none}
+#auth .arow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:2px}
+#auth .arow #signup{margin-left:auto}
+#auth button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 12px;font:700 12px Orbitron,Archivo,sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--c1);background:linear-gradient(rgba(0,229,255,.10),rgba(0,229,255,.10));border:1px solid var(--c1);border-radius:0;cursor:pointer;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:inset 0 0 12px rgba(0,229,255,.25);transition:transform .12s,background .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+#auth button::before{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-160%) skewX(-20deg);animation:sweep 3.6s ease-in-out infinite}
+#auth button.pri{color:#021018;border-color:transparent;background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3),var(--c2),var(--c1)) 0 0/250% 100%;animation:flow 6s linear infinite}
+#auth button:hover{box-shadow:inset 0 0 18px rgba(0,229,255,.5);background:rgba(0,229,255,.2);color:#fff}
+#auth button.pri:hover{color:#021018;filter:brightness(1.15)}
+#auth button:active{transform:scale(.94)}
+#auth button.zap{animation:zap .45s ease-out}
+#auth button.pri.zap{animation:zap .45s ease-out,flow 6s linear infinite}
+#auth button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#auth .rip{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(0,229,255,.55) 40%,transparent 70%);transform:scale(0);animation:rip .6s ease-out forwards}
+#auth.pulse{animation:apulse .55s ease-out}
+#auth .sfoto{border:1px dashed rgba(0,229,255,.4);border-radius:6px;padding:8px}
+@keyframes neonb{0%,100%{border-color:rgba(0,229,255,.6)}50%{border-color:rgba(138,92,255,.85)}}
+@keyframes scan{0%{top:-3px;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:100%;opacity:0}}
+@keyframes sweep{0%{transform:translateX(-160%) skewX(-20deg)}55%,100%{transform:translateX(420%) skewX(-20deg)}}
+@keyframes flow{to{background-position:250% 0}}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+@keyframes zap{0%{transform:scale(.92) skewX(-8deg);filter:brightness(1.8)}35%{transform:scale(1.04) skewX(5deg);filter:brightness(1.4) hue-rotate(50deg)}70%{transform:scale(.99) skewX(-2deg)}100%{transform:none;filter:none}}
+@keyframes apulse{0%{box-shadow:0 0 0 0 rgba(0,229,255,.8),0 0 40px rgba(0,229,255,.7),inset 0 0 40px rgba(0,229,255,.3)}100%{box-shadow:0 0 0 14px rgba(0,229,255,0),0 0 22px rgba(0,229,255,.28),inset 0 0 30px rgba(0,229,255,.08)}}
+@keyframes glitch{0%,92%,100%{transform:none;text-shadow:0 0 6px var(--c1),0 0 18px var(--c1)}93%{transform:translateX(-2px);text-shadow:2px 0 var(--c3),-2px 0 var(--c1)}95%{transform:translateX(2px);text-shadow:-2px 0 var(--c3),2px 0 var(--c1)}97%{transform:none}}
+@media (prefers-reduced-motion:reduce){#auth,#auth::before,#auth h2,#auth button,#auth button::before,.alq-logo::before{animation:none!important}}
+</style>
 </head>
 <body>
 <main>
@@ -250,14 +311,14 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <a class="alq" href="https://ayamkurin000-dot.github.io/alquran4all/" target="_blank" rel="noopener" aria-label="Buka Al-Qur'an, Terjemah, Audio, dan Jadwal Sholat">
   <span class="alq-top">
   <span class="alq-ic" aria-hidden="true"><svg class="star" viewBox="0 0 56 56"><polygon points="28.00,1.00 35.65,9.52 47.09,8.91 46.48,20.35 55.00,28.00 46.48,35.65 47.09,47.09 35.65,46.48 28.00,55.00 20.35,46.48 8.91,47.09 9.52,35.65 1.00,28.00 9.52,20.35 8.91,8.91 20.35,9.52" fill="#0a4a37" stroke="#e8c766" stroke-width="1.4" stroke-linejoin="round"/><circle cx="28" cy="28" r="15.5" fill="#06382a" stroke="#e8c766" stroke-opacity=".6" stroke-width="1"/></svg><svg class="bk" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg></span>
-  <span class="alq-t"><span class="alq-ar" lang="ar" dir="rtl">القرآن الكريم</span><b>Al-Qur'an</b><small>Terjemah+Audio+Jadwal Sholat</small></span>
+  <span class="alq-t"><span class="alq-ar" lang="ar" dir="rtl">القرآن الكريم</span><small>Terjemah+Audio+Jadwal Sholat</small></span>
+  <span class="alq-logo" aria-hidden="true"><b><span>AL-</span><em>Qur'an</em></b></span>
   </span>
   <span class="alq-photo"><img src="gambar/murrotal-nixs21.jpg" width="960" height="540" alt="Seorang muslimah mendengarkan murrotal Mishary Alafasy di HP dengan headset Nixs-21" loading="lazy" decoding="async"></span>
 </a>
 </div>
 <section id="auth" hidden>
-<h2>Masuk ke Pengingat Agenda</h2>
-<p id="gtag" class="meta" hidden style="margin:-6px 0 10px;color:var(--mute)"></p>
+<h2>Login</h2>
 <form id="af">
   <label>Email<input id="em" type="email" required autocomplete="email"></label>
   <label id="lbl-nama" hidden>Nama lengkap<input id="nama" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ma'ruf Akbar"></label>
@@ -267,7 +328,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <label id="lbl-pw2" hidden>Ulangi kata sandi<input id="pw2" type="password" minlength="6" autocomplete="new-password"></label>
   <label class="cek" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="showpw" style="width:auto"> Tampilkan kata sandi</label>
   <p class="err" id="aerr" role="alert"></p>
-  <div><button class="pri" type="submit" id="loginbtn">Masuk</button> <button type="button" id="signup">Daftar akun baru</button> <button type="button" id="backlogin" hidden>Sudah punya akun? Masuk</button></div>
+  <div class="arow"><button class="pri" type="submit" id="loginbtn">Masuk</button><button type="button" id="signup">Daftar akun baru</button><button type="button" id="backlogin" hidden>Sudah punya akun? Masuk</button></div>
 </form>
 </section>
 <div id="app" hidden>
@@ -763,9 +824,18 @@ $("instx").addEventListener("click",instClose);$("instlater").addEventListener("
 window.addEventListener("appinstalled",tandaiTerpasang);
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))
   window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){})});
-(function(){var g=urlGrup(),t=$("gtag");if(g){t.textContent="Kelompok: "+GN[g];t.hidden=false}
+(function(){
   var sl=$("grp");sl.appendChild(opt("","Tanpa kelompok"));GRUP.forEach(function(x){sl.appendChild(opt(x[0],x[1]))})})();
 buildDate();load();hint();try{render()}catch(e){}initDb();
+</script>
+<script>
+/* efek klik futuristik pada tombol form login */
+(function(){var a=document.getElementById("auth");if(!a)return;
+a.addEventListener("pointerdown",function(e){var b=e.target.closest&&e.target.closest("button");if(!b||!a.contains(b))return;
+var r=b.getBoundingClientRect(),d=Math.max(r.width,r.height)*2,s=document.createElement("span");
+s.className="rip";s.style.cssText="width:"+d+"px;height:"+d+"px;left:"+(e.clientX-r.left-d/2)+"px;top:"+(e.clientY-r.top-d/2)+"px";
+b.appendChild(s);b.classList.remove("zap");a.classList.remove("pulse");void b.offsetWidth;b.classList.add("zap");a.classList.add("pulse");
+setTimeout(function(){s.remove();b.classList.remove("zap");a.classList.remove("pulse")},650)})})();
 </script>
 </body>
 </html>
