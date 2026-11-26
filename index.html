@@ -533,7 +533,7 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
   if(nm.length<3){hot($("aerr"),"Isi Nama Lengkap !!!");$("nama").focus();return}
   if(!$("jk").value){$("aerr").textContent="Pilih jenis kelamin.";return}
   if(!SIGNFOTO){hot($("aerr"),"Atur Foto Profil Dulu !!!");return}
-  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,jk:$("jk").value}}});
+  var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,display_name:nm,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
   try{localStorage.setItem("foto-daftar",JSON.stringify({email:$("em").value.trim().toLowerCase(),foto:SIGNFOTO}))}catch(e){}
   if(!r.data.session){$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk.";setReg(false);$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk."}}
@@ -593,7 +593,7 @@ async function saveProf(){var nm=$("pnamaIn").value.trim().replace(/\s+/g," "),j
   if(!jk){er.textContent="Pilih jenis kelamin.";return}
   if(!fotoNow()){hot(er,"Pilih Foto Profil Dulu !!!");return}
   $("psave").disabled=true;$("psave").textContent="Menyimpan…";var fotoBaru=PEND;
-  var u=await sb.auth.updateUser({data:{nama:nm,jk:jk}});
+  var u=await sb.auth.updateUser({data:{nama:nm,display_name:nm,jk:jk}});
   if(u.error){$("psave").disabled=false;$("psave").textContent="Simpan";er.textContent="Gagal menyimpan: "+u.error.message;return}
   PROF.nama=nm;PROF.jk=jk;
   if(fotoBaru!==undefined){var foto=fotoBaru;try{localStorage.setItem(fotoKey(),foto)}catch(e){}
