@@ -216,6 +216,11 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @keyframes tmembal{50%{transform:scale(1.25)}}
 @keyframes tbar{to{transform:scaleX(0)}}
 @keyframes tcf{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
+/* Tanggal batas: merah menyala, huruf berputar (dipelintir) dari kiri ke kanan, jeda, lalu ulang. Tiap kartu punya jeda mulai berbeda (--o) agar tidak berbarengan. */
+.tgl{color:#ff4033;font-weight:800;text-shadow:0 0 3px rgba(255,64,51,.75),0 0 8px rgba(255,64,51,.35)}
+.tgl .tw{display:inline-block;white-space:nowrap}
+.tgl .tc2{display:inline-block;transform-origin:50% 55%;animation:pelintir 6s ease-in-out infinite;animation-delay:calc(var(--o,0s) + var(--i,0)*.07s)}
+@keyframes pelintir{0%{transform:perspective(220px) rotateX(0) scale(1)}6%{transform:perspective(220px) rotateX(180deg) scale(1.18)}12%,100%{transform:perspective(220px) rotateX(360deg) scale(1)}}
 #toastok.err2{background:linear-gradient(135deg,#7f1d1d,#dc2626)}
 #toastok.err2 .tc{stroke:#fecaca}
 #toastok.err2.show{animation:tgetar .5s ease-out}
@@ -425,8 +430,8 @@ async function loadPublic(){
   var db=all;pm=pm.filter(function(p){var pn=p.name.toLowerCase();return!all.some(function(x){return(x.it.name||"").toLowerCase()===pn})});PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^.* an\. /,"").toLowerCase()});
   var al=db.concat(pm.map(function(it){return{it:it,i:info(it)}})).filter(function(x){return x.it.perma||x.i.left<AMBANG_ASLI}).sort(function(a,b){return a.i.left-b.i.left});
   var errHtml=r.error?'<p style="margin:0 0 10px;font-size:13px;opacity:.7">Pengumuman lain belum bisa dimuat: '+esc(r.error.message||"")+'</p>':"";
-  box.innerHTML=errHtml+al.map(function(x){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
-    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+(x.it.perma?'<span class="demo">DEMO</span>':'')+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+(x.it.perma?" \u00b7 Contoh tampilan, bukan data asli":"")+'</small></div></div>'}).join("")}
+  box.innerHTML=errHtml+al.map(function(x,k){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
+    return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+(x.it.perma?'<span class="demo">DEMO</span>':'')+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas : ")+tglRoll(x.i.date,k,al.length)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+(x.it.perma?" \u00b7 Contoh tampilan, bukan data asli":"")+'</small></div></div>'}).join("")}
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
@@ -618,15 +623,18 @@ function notif(judul,sub,gagal){
   el.innerHTML='<svg class="tck" viewBox="0 0 52 52" aria-hidden="true"><circle class="tc" cx="26" cy="26" r="23"/>'+ik+'</svg><div class="tt"><b>'+esc(judul)+'</b><small>'+esc(sub||"")+'</small></div><i class="tbar"></i>'+cf;
   el.className=(gagal?"err2 ":"")+"show";toastT=setTimeout(function(){el.className=""},gagal?4500:3200)}
 function notifSimpan(edit){notif("Berhasil menyimpan",edit?"Perubahan agenda sudah tersimpan.":"Agenda baru sudah ditambahkan.")}
+function tglRoll(d,k,n){var t=fmt(d),i=0,o=(((k||0)*Math.min(2,6/Math.max(1,n||1)))%6).toFixed(2);
+  var w=t.split(" ").map(function(kata){return'<span class="tw">'+kata.split("").map(function(c){return'<span class="tc2" style="--i:'+(i++)+'">'+c+'</span>'}).join("")+'</span>'}).join(" ");
+  return'<span class="tgl" style="--o:'+o+'s" role="text" aria-label="'+esc(t)+'"><span aria-hidden="true">'+w+'</span></span>'}
 function kosongHtml(sub){return'<div class="kosong"><span class="kic" aria-hidden="true">\ud83d\uddd3\ufe0f</span><b>Belum ada agenda</b><small>'+sub+'</small></div>'}
 function render(){
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){var i=info(it);return{it:it,i:i,mute:isAdmin&&isSenyap(it,i)}}).sort(function(a,b){return a.i.left-b.i.left});
   var al=rows.filter(function(r){return isAdmin?(r.i.left<ADMIN_HARI&&!r.mute):r.i.st!=="ok"});
-  $("alerts").innerHTML=!items.length?kosongHtml("Agenda yang ditambahkan akan tampil di sini."):al.length?al.map(function(r){
+  $("alerts").innerHTML=!items.length?kosongHtml("Agenda yang ditambahkan akan tampil di sini."):al.length?al.map(function(r,k){
     var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
     var pm=isAdmin?PEM[r.it.id]:null,who=isAdmin?'<small class="l3">\ud83d\udc64 '+(pm&&(pm.nama||pm.email)?esc(pm.nama||"-")+" · "+esc(pm.email||"-"):"Pengguna belum tercatat")+'</small>':"";
-    return '<div class="alert'+(isAdmin?' adm':'')+'"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t"><div class="l1">'+rich(r.it.name)+'</div><small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(isAdmin&&gk(r.it)?" · "+esc(GN[gk(r.it)]):"")+(r.it.note?" · "+esc(r.it.note):"")+'</small>'+who+'</div></div>'}).join("")
+    return '<div class="alert'+(isAdmin?' adm':'')+'"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t"><div class="l1">'+rich(r.it.name)+'</div><small>'+(r.i.left<0?"Lewat dari ":"Batas : ")+tglRoll(r.i.date,k,al.length)+(isAdmin&&gk(r.it)?" · "+esc(GN[gk(r.it)]):"")+(r.it.note?" · "+esc(r.it.note):"")+'</small>'+who+'</div></div>'}).join("")
     :'<p class="aman">'+(isAdmin?"Tidak ada agenda yang jatuh tempo kurang dari "+ADMIN_HARI+" hari.":"Tidak ada agenda yang perlu diurus sekarang.")+'</p>';
   renderFolders(rows);
   if(isAdmin){if(openG===null){$("list").innerHTML="";return}rows=rows.filter(function(r){return gk(r.it)===openG})}
