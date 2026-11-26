@@ -319,7 +319,8 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .k-acts{margin-top:5px}
 .k-acts button{padding-top:5px;padding-bottom:5px}
 .k-foot{min-height:22px;margin-top:3px}
-.k-tm{padding:2px 9px!important;font-size:12.5px;border-radius:99px;white-space:nowrap}
+.k-no{min-width:26px;height:24px;padding:0 8px;display:inline-grid;place-items:center;border-radius:99px;font:800 13px/1 Archivo,system-ui,sans-serif;background:var(--okbg);color:var(--ok)}
+.tm .k-no{background:var(--cbadge);color:var(--cbadgeink)}
 .item .badge{padding:2px 10px}
 /* ===== Kartu profil menempel di atas (tidak ikut scroll) ===== */
 .prof{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;margin-bottom:10px;box-shadow:0 6px 14px -6px rgba(0,0,0,.35)}
@@ -344,6 +345,12 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .th-rainbow button.pri{background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#3b82f6,#8b5cf6);text-shadow:0 1px 2px rgba(0,0,0,.45)}
 /* ===== Jendela pengaturan tema ===== */
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.prof.tm{box-shadow:0 6px 14px -6px rgba(0,0,0,.35),var(--csh,0 0 0 transparent)}
+.prof.tm .pinfo b,.prof.tm .pgrup{color:var(--cink)}
+.prof.tm .pinfo small{color:var(--cmute)}
+.prof.tm .avbtn img{border-color:var(--cbd)}
+.prof.tm .avedit{background:var(--cbtn);color:var(--cbtnink);border-color:transparent}
+.prof.tm .gearbtn{border-color:var(--cbd);background:var(--chov)}
 .tsw{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 10px!important;border-radius:10px;border:2px solid var(--cbd);line-height:1.2}
 .tsw b{font-size:14px}.tsw small{font-size:12px;opacity:.9}
 .tsw.on{outline:3px solid #4c8dff;outline-offset:1px}
@@ -775,7 +782,9 @@ $("tgrid").addEventListener("click",function(e){var b=e.target.closest("button")
   temaSave();temaDraw();render()});
 $("ttutup").addEventListener("click",function(){$("tmodal").hidden=true});
 $("tmodal").addEventListener("click",function(e){if(e.target===$("tmodal"))$("tmodal").hidden=true});
+function profTema(){var el=$("prof");if(!el)return;var t=TEMA_LIST.some(function(x){return x[0]===TEMA.all})?TEMA.all:"";el.className="prof"+(t?" tm th-"+t:"")}
 function render(){
+  profTema();
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){var i=info(it);return{it:it,i:i,mute:isAdmin&&isSenyap(it,i)}}).sort(function(a,b){return a.i.left-b.i.left});
   var al=rows.filter(function(r){return isAdmin?(r.i.left<ADMIN_HARI&&!r.mute):r.i.st!=="ok"});
@@ -786,11 +795,12 @@ function render(){
     :'<p class="aman">'+(isAdmin?"Tidak ada agenda yang jatuh tempo kurang dari "+ADMIN_HARI+" hari.":"Tidak ada agenda yang perlu diurus sekarang.")+'</p>';
   renderFolders(rows);
   if(isAdmin){if(openG===null){$("list").innerHTML="";return}rows=rows.filter(function(r){return gk(r.it)===openG})}
+  var nomor=0;
   var cardHtml=function(r){var it=r.it,c=CAT[it.cat];
     var rn=c.mode==="renew"?'<button class="pri k-sdh" data-a="renew" data-id="'+it.id+'" title="Sudah diperpanjang (+'+c.step+' thn)" aria-label="Sudah diperpanjang (+'+c.step+' thn)"><b>SUDAH</b><small>SUDAH DIPERPANJANG</small></button>':'';
-    var th=temaOf(it.id);return '<div class="item '+r.i.st+(th?' tm th-'+th:'')+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
+    nomor++;var th=temaOf(it.id);return '<div class="item '+r.i.st+(th?' tm th-'+th:'')+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
     +'<div class="k-acts">'+rn+(isAdmin?'<button data-a="mute" data-id="'+it.id+'">'+(r.mute?'\ud83d\udd14 Aktifkan':'\ud83d\udd15 Senyap')+'</button>':'')+'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div>'
-    +'<div class="k-foot"><button type="button" class="k-tm" data-a="tema" data-id="'+it.id+'" aria-label="Atur tema kartu">\ud83c\udfa8 Tema</button>'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
+    +'<div class="k-foot"><span class="k-no" aria-label="Nomor urut '+nomor+'">'+nomor+'</span>'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
   $("list").innerHTML=rows.length?(isAdmin?grupPembuat(rows,cardHtml):rows.map(cardHtml).join(""))
     :'<div class="empty">'+kosongHtml("Tambahkan agenda pertama di formulir bawah.")+'</div>';
   fitLines();
