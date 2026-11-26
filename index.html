@@ -368,6 +368,11 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
 .th-sea{--cinp:rgba(255,255,255,.65);--copt:#dff6fa}
 .th-sky{--cinp:rgba(255,255,255,.65);--copt:#eaf2ff}
 .th-rainbow{--cinp:rgba(255,255,255,.7);--copt:#fff}
+.prof{padding:3px 6px 3px 8px;gap:8px;border-radius:12px;min-height:0}
+.prof .pleft{padding-left:30px;gap:0}
+.prof .avbtn,.prof .avbtn img{width:54px;height:54px}
+.prof .gearbtn{position:absolute;top:4px;left:4px;width:28px;height:28px;z-index:1}
+.prof .gearbtn svg{width:17px;height:17px}
 .tsw{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 10px!important;border-radius:10px;border:2px solid var(--cbd);line-height:1.2}
 .tsw b{font-size:14px}.tsw small{font-size:12px;opacity:.9}
 .tsw.on{outline:3px solid #4c8dff;outline-offset:1px}
@@ -416,8 +421,9 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
 </section>
 <div id="app" hidden>
 <div id="prof" class="prof">
+  <button type="button" id="gearbtn" class="gearbtn" aria-label="Pengaturan tampilan kartu" title="Pengaturan tampilan kartu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.5-2-3.5-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14.100 2.500h-4l-.4 2.400a7.600 7.600 0 0 0-2.600 1.500l-2.300-.9-2 3.500 2 1.500a7.700 7.700 0 0 0 0 3l-2 1.500 2 3.500 2.300-.9a7.600 7.600 0 0 0 2.600 1.500l.4 2.400h4l.4-2.400a7.600 7.600 0 0 0 2.600-1.500l2.300.9 2-3.500z"/></svg></button>
   <div class="pleft"><div class="pinfo" id="pedit" role="button" tabindex="0" style="cursor:pointer" aria-label="Ubah profil"><b id="pnama"></b><small id="pemail"></small></div></div>
-  <div class="pright"><button type="button" id="gearbtn" class="gearbtn" aria-label="Pengaturan tampilan kartu" title="Pengaturan tampilan kartu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.5-2-3.5-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14.100 2.500h-4l-.4 2.400a7.600 7.600 0 0 0-2.600 1.500l-2.300-.9-2 3.500 2 1.500a7.700 7.700 0 0 0 0 3l-2 1.500 2 3.500 2.300-.9a7.600 7.600 0 0 0 2.600 1.500l.4 2.400h4l.4-2.400a7.600 7.600 0 0 0 2.600-1.500l2.300.9 2-3.500z"/></svg></button><span id="pgrup" class="pgrup" hidden></span><button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button></div>
+  <div class="pright"><span id="pgrup" class="pgrup" hidden></span><button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button></div>
 </div>
 <div class="psavebar" id="psavebar" hidden><button type="button" class="pri" id="psimpan" disabled>Simpan foto profil</button><span class="meta" id="pstat"></span></div>
 <section class="hero" aria-live="polite">
