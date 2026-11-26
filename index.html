@@ -398,7 +398,8 @@ async function loadRows(){
 /* Agenda bergilir: 2 slot. Setiap slot menampilkan satu nama sampai jatuh tempo lewat, lalu diganti nama berikutnya di daftar.
    Slot 1: Alby, Fatih, Aziz, ... (indeks genap) | Slot 2: Val El, Azam, Fabio, ... (indeks ganjil). Daftar berputar kembali ke awal. */
 var NAMA_BERGILIR=["Alby","Val El","Fatih","Azam","Aziz","Fabio","Chacha","Alin","Lintang","Eliza","Aufa","Akmal","Arvatan","Sabil","Ahsin"];
-var AMBANG_ASLI=5;
+/* Aturan pengumuman publik (tanpa login): semua jenis agenda di folder/kelompok yang tinggal KURANG DARI 10 hari lagi (termasuk yang sudah lewat) otomatis tampil, dan saat itu juga kartu DEMO hilang. */
+var AMBANG_ASLI=10;
 var JATUH_TEMPO_AWAL=["2026-11-29","2026-12-03"],DUR_MIN=3,DUR_MAX=9;
 /* Lama jatuh tempo tiap nama acak (3-9 hari, selalu di bawah 10) tapi tetap: hasilnya sama untuk semua pengunjung karena memakai bibit tetap (slot, urutan). */
 function durAcak(slot,k){var a=(slot*100003+k*7919+12345)>>>0;a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);var r=((t^t>>>14)>>>0)/4294967296;return DUR_MIN+Math.floor(r*(DUR_MAX-DUR_MIN+1))}
@@ -422,7 +423,7 @@ async function loadPublic(){
   var pm=mendesak?[]:permaItems();PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^.* an\. /,"").toLowerCase()});
   /* Agenda asli selalu ditampilkan. Kartu DEMO hanya disingkirkan kalau ada agenda asli dengan nama PERSIS sama (bukan sekadar mengandung nama depan yang sama). */
   var db=all;pm=pm.filter(function(p){var pn=p.name.toLowerCase();return!all.some(function(x){return(x.it.name||"").toLowerCase()===pn})});PERMA_SHOWN=pm.map(function(x){return x.name.replace(/^.* an\. /,"").toLowerCase()});
-  var al=db.concat(pm.map(function(it){return{it:it,i:info(it)}})).filter(function(x){return x.it.perma||x.i.st!=="ok"||x.i.left<AMBANG_ASLI}).sort(function(a,b){return a.i.left-b.i.left});
+  var al=db.concat(pm.map(function(it){return{it:it,i:info(it)}})).filter(function(x){return x.it.perma||x.i.left<AMBANG_ASLI}).sort(function(a,b){return a.i.left-b.i.left});
   var errHtml=r.error?'<p style="margin:0 0 10px;font-size:13px;opacity:.7">Pengumuman lain belum bisa dimuat: '+esc(r.error.message||"")+'</p>':"";
   box.innerHTML=errHtml+al.map(function(x){var n=x.i.left<0?"\u2212"+(-x.i.left):x.i.left;
     return '<div class="alert"><div class="num'+numCls(x.i.left)+'">'+(x.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+(x.it.perma?'<span class="demo">DEMO</span>':'')+rich(x.it.name)+'<small>'+(x.i.left<0?"Lewat dari ":"Batas ")+fmt(x.i.date)+(!g&&okG(x.it.grup)?" \u00b7 "+esc(GN[okG(x.it.grup)]):"")+(x.it.note?" \u00b7 "+esc(x.it.note):"")+(x.it.perma?" \u00b7 Contoh tampilan, bukan data asli":"")+'</small></div></div>'}).join("")}
