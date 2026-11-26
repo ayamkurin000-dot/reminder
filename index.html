@@ -304,6 +304,12 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alq{margin:0 0 6px}
 #extras{margin-top:0}
 #auth{margin-top:0}
+/* ===== Perbaikan: isian tetap jelas (gelap, teks terang) saat fokus / autofill / isi otomatis ===== */
+#auth input:not([type=checkbox]),#auth select{color:#eafcff;-webkit-text-fill-color:#eafcff;color-scheme:dark}
+#auth input:not([type=checkbox]):-webkit-autofill,#auth input:not([type=checkbox]):-webkit-autofill:hover,#auth input:not([type=checkbox]):-webkit-autofill:focus,#auth input:not([type=checkbox]):-webkit-autofill:active{-webkit-text-fill-color:#eafcff!important;caret-color:#00e5ff;-webkit-box-shadow:0 0 0 100px #0a1628 inset,0 0 0 1px #00e5ff,0 0 14px rgba(0,229,255,.55)!important;box-shadow:0 0 0 100px #0a1628 inset,0 0 0 1px #00e5ff,0 0 14px rgba(0,229,255,.55)!important;border-color:#00e5ff;transition:background-color 99999s ease-out 0s}
+#auth input:not([type=checkbox]):focus{color:#eafcff;-webkit-text-fill-color:#eafcff;background-color:#0b1d33}
+#auth input::placeholder{color:rgba(159,232,248,.5);-webkit-text-fill-color:rgba(159,232,248,.5)}
+#auth input::selection{background:rgba(0,229,255,.45);color:#fff}
 </style>
 </head>
 <body>
