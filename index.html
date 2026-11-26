@@ -49,6 +49,14 @@ h2{font-size:18px;margin:26px 0 10px}
 .k-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
 .k-r{margin-left:auto;display:flex;align-items:center;gap:8px}
 .k-pub{font-size:12.5px;color:var(--mute);white-space:nowrap}
+.gbox{--s:72%;margin-bottom:16px;padding:8px;border-radius:16px;background:linear-gradient(135deg,hsla(var(--h),var(--s),50%,.24),hsla(var(--h2),var(--s),45%,.08));border:1px solid hsla(var(--h),var(--s),50%,.5)}
+.gbox.gx{--s:8%}
+.gbox .item:last-child{margin-bottom:0}
+.gh{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:9px 12px;border-radius:12px;color:#fff;background:linear-gradient(135deg,hsl(var(--h),var(--s),40%),hsl(var(--h2),var(--s),28%));box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.gav{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:rgba(255,255,255,.22)}
+.gt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.gt b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gt small{font-size:12px;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gn{flex:none;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.22);white-space:nowrap}
 .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px}
@@ -594,14 +602,22 @@ function render(){
     :'<p class="aman">'+(isAdmin?"Tidak ada agenda yang jatuh tempo kurang dari "+ADMIN_HARI+" hari.":"Tidak ada agenda yang perlu diurus sekarang.")+'</p>';
   renderFolders(rows);
   if(isAdmin){if(openG===null){$("list").innerHTML="";return}rows=rows.filter(function(r){return gk(r.it)===openG})}
-  $("list").innerHTML=rows.length?rows.map(function(r){var it=r.it,c=CAT[it.cat];
+  var cardHtml=function(r){var it=r.it,c=CAT[it.cat];
     var rn=c.mode==="renew"?'<button class="pri k-sdh" data-a="renew" data-id="'+it.id+'" title="Sudah diperpanjang (+'+c.step+' thn)" aria-label="Sudah diperpanjang (+'+c.step+' thn)"><b>SUDAH</b><small>SUDAH DIPERPANJANG</small></button>':'';
     return '<div class="item '+r.i.st+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
     +'<div class="k-acts">'+rn+(isAdmin?'<button data-a="mute" data-id="'+it.id+'">'+(r.mute?'\ud83d\udd14 Aktifkan':'\ud83d\udd15 Senyap')+'</button>':'')+'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div>'
-    +'<div class="k-foot">'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'}).join("")
+    +'<div class="k-foot">'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
+  $("list").innerHTML=rows.length?(isAdmin?grupPembuat(rows,cardHtml):rows.map(cardHtml).join(""))
     :'<div class="empty">'+kosongHtml("Tambahkan agenda pertama di formulir bawah.")+'</div>';
   fitLines();
 }
+/* Admin: kartu dikelompokkan per akun pembuat agenda, tiap akun punya warna gradasi sendiri (tetap, dihitung dari emailnya). */
+function hueOf(k){var h=2166136261,i;for(i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,16777619)}return Math.abs(h)%360}
+function grupPembuat(rows,fn){var G={},ks=[];
+  rows.forEach(function(r){var p=PEM[r.it.id],k=p&&p.email?String(p.email).toLowerCase():"";if(!G[k]){G[k]={p:p,rows:[]};ks.push(k)}G[k].rows.push(r)});
+  ks.sort(function(a,b){if(!a)return 1;if(!b)return-1;var x=(G[a].p.nama||a).toLowerCase(),y=(G[b].p.nama||b).toLowerCase();return x<y?-1:x>y?1:0});
+  return ks.map(function(k){var g=G[k],h=hueOf(k||"x"),nm=k?(g.p.nama||k):"Pengguna belum tercatat";
+    return'<section class="gbox'+(k?'':' gx')+'" style="--h:'+h+';--h2:'+((h+40)%360)+'"><div class="gh"><span class="gav" aria-hidden="true">'+esc(nm.charAt(0).toUpperCase())+'</span><span class="gt"><b>'+esc(nm)+'</b>'+(k?'<small>'+esc(k)+'</small>':'')+'</span><span class="gn">'+g.rows.length+' agenda</span></div>'+g.rows.map(fn).join("")+'</section>'}).join("")}
 /* Teks kartu wajib 1 baris: kalau tidak muat di layar, ukuran hurufnya diperkecil otomatis. */
 function fitLines(){document.querySelectorAll("#list .fit").forEach(function(el){el.style.fontSize="";var fs=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+.5&&fs>8){fs-=.5;el.style.fontSize=fs+"px"}})}
 window.addEventListener("resize",fitLines);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLines);
