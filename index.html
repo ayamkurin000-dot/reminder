@@ -523,8 +523,13 @@ var CAT={stnk:{n:"HER STNK",step:1,mode:"renew"},sim:{n:"HER SIM (5 tahunan)",st
 var HINT={stnk:"Isi tanggal jatuh tempo pajak STNK terdekat dan tahun kendaraan (tahun pertama STNK terbit). Aplikasi otomatis menulis HER STNK TAHUNAN atau 5 TAHUNAN: setiap kelipatan 5 tahun dari tahun kendaraan. Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 1 tahun.",sim:"Isi dengan tanggal masa berlaku SIM (tertera di kartu SIM). Setelah diperpanjang, tekan “Sudah diperpanjang” agar jatuh tempo maju 5 tahun (tanggal dan bulan tetap sama dengan yang diinput; kalau perlu, ubah manual lewat tombol edit)."};
 var GRUP=[["guru","Teman Guru"],["kuliah","Teman Kuliah"],["sukorejo","Sukorejo"],["gaprang","Gaprang"],["isbadar","Isbadar"],["mbah-kung","Mbah Kung"],["bani-mukti","Bani Mukti"],["bani-maruf","Bani Ma'ruf"],["bani-fatchul","Bani Fatchul"],["ping-pong","Bolo Ping Pong"],["s0hyb1u3","Sohib"]],GN={},myGrup="",openG=null;
 GRUP.forEach(function(g){GN[g[0]]=g[1]});
+/* KODE = alamat unik yang tampil di browser. Kunci lama (guru, kuliah, ...) tetap diterima agar link yang sudah dibagikan tidak mati, lalu alamat otomatis diganti kode unik. Kunci internal (data) TIDAK berubah. */
+var KODE={"guru": "guru-tuycpx5d", "kuliah": "kuliah-eyyy6x9s", "sukorejo": "sukorejo-zhaf2u3k", "gaprang": "gaprang-c4jspwkx", "isbadar": "isbadar-bsfoi7rq", "mbah-kung": "mbah-kung-73dpo4v1", "bani-mukti": "bani-mukti-y5to2has", "bani-maruf": "bani-maruf-u02to51f", "bani-fatchul": "bani-fatchul-4nkyaz71", "ping-pong": "ping-pong-ecuio8pw", "s0hyb1u3": "s0hyb1u3"},K2G={},LAMA=["guru", "kuliah", "sukorejo", "gaprang", "isbadar", "mbah-kung", "bani-mukti", "bani-maruf", "bani-fatchul", "ping-pong"];
+Object.keys(KODE).forEach(function(k){K2G[KODE[k]]=k});
 function okG(v){v=String(v||"").toLowerCase();return GN[v]?v:""}
-function urlGrup(){var v="";try{v=okG(new URLSearchParams(location.search).get("k"))}catch(e){}
+function resG(v){v=String(v||"").toLowerCase();if(K2G[v])return K2G[v];return LAMA.indexOf(v)>=0&&GN[v]?v:""}
+function urlGrup(){var v="";try{v=resG(new URLSearchParams(location.search).get("k"))}catch(e){}
+  try{if(v&&KODE[v]){var P=new URLSearchParams(location.search);if(P.get("k")!==KODE[v]){P.set("k",KODE[v]);history.replaceState(null,"",location.pathname+"?"+P.toString()+location.hash)}}}catch(e){}
   try{if(v)localStorage.setItem("agenda-grup",v);else v=okG(localStorage.getItem("agenda-grup"))}catch(e){}
   return v}
 var MON=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -759,7 +764,7 @@ var BELLG='<svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id=
  +'<circle class="ldot" cx="30" cy="9" r="4" fill="#ef4444" stroke="#fff" stroke-width="1.5"/></svg>';
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var ADMIN_HARI=7;
-function gLink(g){var u=location.origin+location.pathname.replace(/index\.html$/,"");return g?u+"?k="+g:u}
+function gLink(g){var u=location.origin+location.pathname.replace(/index\.html$/,"");return g?u+"?k="+(KODE[g]||g):u}
 function salin(t,btn){var done=function(){if(!btn)return;var o=btn.dataset.o||btn.textContent;btn.dataset.o=o;btn.textContent="✓ Tersalin";setTimeout(function(){btn.textContent=o},1500)};
   if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(done,function(){old()});else old();
   function old(){var a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();done()}}
