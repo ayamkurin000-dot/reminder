@@ -294,7 +294,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <label>Ingatkan sebelum
     <select id="lead"><option value="7">7 hari</option><option value="14">14 hari</option><option value="30" selected>30 hari</option><option value="60">60 hari</option><option value="90">90 hari</option></select>
   </label>
-  <label>Catatan (opsional)<input id="note" maxlength="120" placeholder="Contoh: bawa KTP asli dan BPKB"></label>
+  <label>Catatan (opsional)<input id="note" maxlength="120" placeholder="Contoh: Rp. 120.000, KTP &amp; STNK &amp; BPKB asli"></label>
   <label class="full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="pub" style="width:auto"> Tampilkan sebagai pengumuman publik (terlihat tanpa login)</label>
   <p class="hint full" id="hint"></p>
   <div class="full"><button class="pri" type="submit" id="save">Simpan agenda</button> <button type="button" id="cancel" hidden>Batal</button></div>
@@ -650,6 +650,7 @@ $("list").addEventListener("click",function(e){var b=e.target.closest("button");
     var cc=it.cat,fy=it.five||"",need=isStnk(it.cat)?[$("owner").value,$("veh").value,$("col").value]:[$("owner").value],loose=need.some(function(x){return!x});
     $("cat").value=cc;if(fy&&!$("five").querySelector('option[value="'+fy+'"]'))$("five").appendChild(opt(fy,fy));$("five").value=fy;setD(it.date);$("lead").value=it.lead;$("note").value=it.note||"";$("pub").disabled=false;$("pub").checked=!!it.publik;$("ftitle").textContent="Ubah agenda";$("save").textContent="Simpan perubahan";$("cancel").hidden=false;$("cancel2").hidden=false;keep={name:it.name,loose:loose,cat:it.cat};hint();keep.sig=sig();$("ftitle").scrollIntoView({behavior:"smooth"})}});
 function hint(){var c=$("cat").value,st=isStnk(c);
+  $("note").placeholder=c==="sim"?"Contoh: e-KTP asli dan fotokopinya":"Contoh: Rp. 120.000, KTP & STNK & BPKB asli";
   $("hint").textContent=HINT[c]+""+(c==="stnk"&&+$("five").value?" HER 5 TAHUNAN jatuh pada tahun "+lima(+$("five").value).join(", ")+".":"");
   var lo=!!(keep&&keep.loose&&keep.cat===c);
   $("lbl-five").hidden=c!=="stnk";$("five").required=c==="stnk"&&!lo;
