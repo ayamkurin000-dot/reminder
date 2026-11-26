@@ -357,6 +357,17 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .prof.tm .avbtn img{border-color:var(--cbd)}
 .prof.tm .avedit{background:var(--cbtn);color:var(--cbtnink);border-color:transparent}
 .prof.tm .gearbtn{border-color:var(--cbd);background:var(--chov)}
+form.tm label,form.tm .hint{color:var(--cmute)}
+form.tm input:not([type=checkbox]),form.tm select{background:var(--cinp);border-color:var(--cbd);color:var(--cink);-webkit-text-fill-color:var(--cink)}
+form.tm input::placeholder{color:var(--cmute);-webkit-text-fill-color:var(--cmute);opacity:.7}
+form.tm input[type=checkbox]{accent-color:var(--cbd)}
+form.tm select option{background:var(--copt);color:var(--cink)}
+form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-offset:1px}
+.th-futuristik{--cinp:rgba(0,229,255,.08);--copt:#0a1228;color-scheme:dark}
+.th-nature{--cinp:rgba(255,255,255,.65);--copt:#eaf6df}
+.th-sea{--cinp:rgba(255,255,255,.65);--copt:#dff6fa}
+.th-sky{--cinp:rgba(255,255,255,.65);--copt:#eaf2ff}
+.th-rainbow{--cinp:rgba(255,255,255,.7);--copt:#fff}
 .tsw{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 10px!important;border-radius:10px;border:2px solid var(--cbd);line-height:1.2}
 .tsw b{font-size:14px}.tsw small{font-size:12px;opacity:.9}
 .tsw.on{outline:3px solid #4c8dff;outline-offset:1px}
@@ -804,7 +815,7 @@ $("tgrid").addEventListener("click",function(e){var b=e.target.closest("button")
   temaSave();temaDraw();render()});
 $("ttutup").addEventListener("click",function(){$("tmodal").hidden=true});
 $("tmodal").addEventListener("click",function(e){if(e.target===$("tmodal"))$("tmodal").hidden=true});
-function profTema(){var el=$("prof");if(!el)return;var t=TEMA_LIST.some(function(x){return x[0]===TEMA.all})?TEMA.all:"";el.className="prof"+(t?" tm th-"+t:"")}
+function profTema(){var el=$("prof");if(!el)return;var t=TEMA_LIST.some(function(x){return x[0]===TEMA.all})?TEMA.all:"";el.className="prof"+(t?" tm th-"+t:"");var f=$("f");if(f)f.className=t?"tm th-"+t:""}
 function render(){
   profTema();
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
