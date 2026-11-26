@@ -480,6 +480,15 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
     <div class="prow" style="margin-top:12px"><button type="button" class="pri" id="lganti">📷 Ganti foto</button><button type="button" id="ltutup">Tutup</button></div>
   </div>
 </div>
+<div id="pwmodal" class="pmodal" hidden role="dialog" aria-modal="true" aria-labelledby="pwttl">
+  <div class="pbox">
+    <h2 id="pwttl" style="margin:0 0 4px">Pengaturan terkunci</h2>
+    <p class="meta" style="margin:0 0 10px">Masukkan kata sandi angka untuk membuka pengaturan.</p>
+    <label>Kata sandi<input id="pwin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" autocomplete="off"></label>
+    <p class="err" id="pwerr" role="alert"></p>
+    <div class="prow" style="margin-top:6px"><button type="button" class="pri" id="pwok">Buka</button><button type="button" id="pwbatal">Batal</button></div>
+  </div>
+</div>
 <div id="tmodal" class="pmodal" hidden role="dialog" aria-modal="true" aria-labelledby="tttl">
   <div class="pbox">
     <h2 id="tttl" style="margin:0 0 2px">Tema kartu</h2>
@@ -782,7 +791,14 @@ function temaOpen(id){temaTarget=id===undefined?null:id;
   temaDraw();$("tmodal").hidden=false}
 function temaDraw(){var cur=temaTarget===null?TEMA.all:temaOf(temaTarget);
   $("tgrid").innerHTML='<button type="button" class="tsw def'+(!cur?' on':'')+'" data-t=""><b>Bawaan</b><small>Putih polos</small></button>'+TEMA_LIST.map(function(t){return'<button type="button" class="tsw tm th-'+t[0]+(cur===t[0]?' on':'')+'" data-t="'+t[0]+'"><b>'+t[1]+'</b><small>'+t[2]+'</small></button>'}).join("")}
-$("gearbtn").addEventListener("click",function(){temaOpen()});
+var PW_SET="21";
+function pwOpen(){$("pwin").value="";$("pwerr").textContent="";$("pwmodal").hidden=false;setTimeout(function(){$("pwin").focus()},50)}
+function pwCek(){if($("pwin").value===PW_SET){$("pwmodal").hidden=true;$("pwin").value="";temaOpen()}else{$("pwerr").textContent="Kata sandi salah.";$("pwin").value="";$("pwin").focus()}}
+$("gearbtn").addEventListener("click",pwOpen);
+$("pwok").addEventListener("click",pwCek);
+$("pwin").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();pwCek()}});
+$("pwbatal").addEventListener("click",function(){$("pwmodal").hidden=true;$("pwin").value=""});
+$("pwmodal").addEventListener("click",function(e){if(e.target===$("pwmodal")){$("pwmodal").hidden=true;$("pwin").value=""}});
 $("tgrid").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var t=b.dataset.t;
   if(temaTarget===null){TEMA.all=t;TEMA.map={}}else{if(t)TEMA.map[temaTarget]=t;else{delete TEMA.map[temaTarget];if(TEMA.all){TEMA.map[temaTarget]="-"}}}
   temaSave();temaDraw();render()});
