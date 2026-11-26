@@ -75,15 +75,9 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .alq-t b{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:24px;letter-spacing:.2px;line-height:1.25;color:#fff8e0;text-shadow:0 1px 4px rgba(0,0,0,.35)}
 .alq-t small{font-size:14px;font-weight:600;color:#bfe6d3}
 .alq-top{display:flex;align-items:center;gap:14px}
-.alq-art{display:block;width:100%;max-width:340px;height:auto;margin:0 auto;overflow:visible}
-.alq-bars rect{transform-box:fill-box;transform-origin:50% 100%;animation:alqbar 1.1s ease-in-out infinite;animation-delay:var(--d,0s)}
-.alq-led{animation:alqglow2 2s ease-in-out infinite}
-.alq-wave{animation:alqglow2 1.6s ease-in-out infinite}
-.alq-cab{animation:alqdash 1.2s linear infinite}
-@keyframes alqbar{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
-@keyframes alqglow2{0%,100%{opacity:.35}50%{opacity:1}}
-@keyframes alqdash{to{stroke-dashoffset:-16}}
-@media (prefers-reduced-motion:reduce){.alq-bars rect,.alq-led,.alq-wave,.alq-cab{animation:none}}
+.alq-photo{display:block;border-radius:14px;overflow:hidden;border:1.5px solid #e8c766;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.alq-photo img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+@media (min-width:560px){.alq{flex-direction:row;align-items:center;gap:18px}.alq-top{flex:0 0 auto;flex-direction:column;align-items:flex-start;gap:8px}.alq-photo{flex:1;min-width:0}.alq-photo img{aspect-ratio:16/9}}
 @media (prefers-reduced-motion:reduce){.alq{transition:none}.alq::after,.alq-ic .star,.alq-ic .bk{animation:none}.alq::after{display:none}}
 
 .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:8px}
@@ -220,54 +214,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
   <span class="alq-ic" aria-hidden="true"><svg class="star" viewBox="0 0 56 56"><polygon points="28.00,1.00 35.65,9.52 47.09,8.91 46.48,20.35 55.00,28.00 46.48,35.65 47.09,47.09 35.65,46.48 28.00,55.00 20.35,46.48 8.91,47.09 9.52,35.65 1.00,28.00 9.52,20.35 8.91,8.91 20.35,9.52" fill="#0a4a37" stroke="#e8c766" stroke-width="1.4" stroke-linejoin="round"/><circle cx="28" cy="28" r="15.5" fill="#06382a" stroke="#e8c766" stroke-opacity=".6" stroke-width="1"/></svg><svg class="bk" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg></span>
   <span class="alq-t"><span class="alq-ar" lang="ar" dir="rtl">القرآن الكريم</span><b>Al-Qur'an</b><small>Terjemah+Audio+Jadwal Sholat</small></span>
   </span>
-  <svg class="alq-art" viewBox="0 0 320 172" role="img" aria-label="HP memutar murrotal Mishary Alafasy dengan headset Nixs-21">
-    <defs>
-      <linearGradient id="alqScr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f7a59"/><stop offset="1" stop-color="#04261c"/></linearGradient>
-      <linearGradient id="alqGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#c9a24a"/></linearGradient>
-      <linearGradient id="alqBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b3a4d"/><stop offset="1" stop-color="#0b1420"/></linearGradient>
-      <linearGradient id="alqCup" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22364b"/><stop offset="1" stop-color="#0a121c"/></linearGradient>
-      <radialGradient id="alqHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5ef2ff" stop-opacity=".28"/><stop offset="1" stop-color="#5ef2ff" stop-opacity="0"/></radialGradient>
-      <filter id="alqNeon" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    </defs>
-    <ellipse cx="245" cy="80" rx="78" ry="70" fill="url(#alqHalo)"/>
-    <!-- kabel dari colokan HP ke headset -->
-    <path d="M70 156 C70 176 150 176 160 146 C168 124 178 120 190 118" fill="none" stroke="#0b1420" stroke-width="5" stroke-linecap="round"/>
-    <path d="M70 156 C70 176 150 176 160 146 C168 124 178 120 190 118" fill="none" stroke="#5ef2ff" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="3 5" class="alq-cab"/>
-    <!-- HP -->
-    <rect x="28" y="4" width="84" height="136" rx="14" fill="url(#alqBody)" stroke="#9db3c8" stroke-width="1.6"/>
-    <rect x="33" y="9" width="74" height="126" rx="10" fill="url(#alqScr)"/>
-    <rect x="58" y="12" width="24" height="5" rx="2.5" fill="#04100c"/>
-    <text x="70" y="29" text-anchor="middle" font-size="6.5" fill="#bfe6d3" font-family="Source Sans 3,Arial,sans-serif">Sedang diputar</text>
-    <circle cx="70" cy="50" r="14" fill="url(#alqGold)" stroke="#fff3b0" stroke-width=".8"/>
-    <path d="M66.5 42.5a8.6 8.6 0 1 0 9.4 10.6a7 7 0 1 1 -9.4 -10.6z" fill="#06382a"/>
-    <text x="70" y="77" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff8e0" font-family="Georgia,serif">Mishary</text>
-    <text x="70" y="88.5" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff8e0" font-family="Georgia,serif">Alafasy</text>
-    <text x="70" y="97" text-anchor="middle" font-size="6.5" fill="#e8c766" font-family="Source Sans 3,Arial,sans-serif">Murrotal</text>
-    <g fill="#e8c766" class="alq-bars">
-      <rect x="41" y="102" width="4" height="12" rx="2" style="--d:0s"/><rect x="47.5" y="102" width="4" height="12" rx="2" style="--d:.2s"/><rect x="54" y="102" width="4" height="12" rx="2" style="--d:.4s"/><rect x="60.5" y="102" width="4" height="12" rx="2" style="--d:.1s"/><rect x="67" y="102" width="4" height="12" rx="2" style="--d:.5s"/><rect x="73.5" y="102" width="4" height="12" rx="2" style="--d:.3s"/><rect x="80" y="102" width="4" height="12" rx="2" style="--d:.15s"/><rect x="86.5" y="102" width="4" height="12" rx="2" style="--d:.45s"/><rect x="93" y="102" width="4" height="12" rx="2" style="--d:.25s"/>
-    </g>
-    <rect x="41" y="119" width="56" height="2.4" rx="1.2" fill="#ffffff" fill-opacity=".25"/>
-    <rect x="41" y="119" width="30" height="2.4" rx="1.2" fill="#e8c766"/>
-    <circle cx="71" cy="120.2" r="3" fill="#fff3b0"/>
-    <circle cx="70" cy="129" r="4.6" fill="#e8c766"/><path d="M68.6 126.6l4.4 2.4-4.4 2.4z" fill="#06382a"/>
-    <path d="M52 129l5 -2.6v5.2zM88 129l-5 -2.6v5.2z" fill="#bfe6d3"/>
-    <!-- colokan jack -->
-    <rect x="62" y="140" width="16" height="9" rx="2" fill="#37474f" stroke="#9db3c8" stroke-width=".8"/>
-    <rect x="66.5" y="149" width="7" height="7" rx="1.5" fill="#cfd8dc"/>
-    <!-- headset futuristik -->
-    <path d="M196 96 C196 34 224 14 245 14 C266 14 294 34 294 96" fill="none" stroke="#0b1420" stroke-width="11" stroke-linecap="round"/>
-    <path d="M196 96 C196 34 224 14 245 14 C266 14 294 34 294 96" fill="none" stroke="#5ef2ff" stroke-width="1.8" filter="url(#alqNeon)"/>
-    <rect x="212" y="2" width="66" height="23" rx="6" fill="#07111b" stroke="#5ef2ff" stroke-width="1.4" filter="url(#alqNeon)"/>
-    <text x="245" y="18.5" text-anchor="middle" font-size="14" font-weight="800" letter-spacing=".4" fill="#9ff8ff" font-family="Archivo,Arial,sans-serif">Nixs-21</text>
-    <rect x="180" y="74" width="28" height="54" rx="12" fill="url(#alqCup)" stroke="#5ef2ff" stroke-width="1.6"/>
-    <rect x="282" y="74" width="28" height="54" rx="12" fill="url(#alqCup)" stroke="#5ef2ff" stroke-width="1.6"/>
-    <rect x="186" y="84" width="16" height="34" rx="7" fill="none" stroke="#5ef2ff" stroke-opacity=".55" stroke-width="1"/>
-    <rect x="288" y="84" width="16" height="34" rx="7" fill="none" stroke="#5ef2ff" stroke-opacity=".55" stroke-width="1"/>
-    <circle cx="194" cy="101" r="3" fill="#5ef2ff" filter="url(#alqNeon)" class="alq-led"/>
-    <circle cx="296" cy="101" r="3" fill="#5ef2ff" filter="url(#alqNeon)" class="alq-led"/>
-    <path d="M172 88q-6 13 0 26M166 82q-11 19 0 38" fill="none" stroke="#5ef2ff" stroke-width="1.5" stroke-linecap="round" class="alq-wave"/>
-    <path d="M318 88q6 13 0 26" fill="none" stroke="#5ef2ff" stroke-width="1.5" stroke-linecap="round" class="alq-wave"/>
-  </svg>
+  <span class="alq-photo"><img src="gambar/murrotal-nixs21.jpg" width="960" height="540" alt="Seorang muslimah mendengarkan murrotal Mishary Alafasy di HP dengan headset Nixs-21" loading="lazy" decoding="async"></span>
 </a>
 </div>
 <section id="auth" hidden>

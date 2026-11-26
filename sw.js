@@ -3,8 +3,8 @@
    - Pustaka Supabase (jsdelivr) -> cache dulu, supaya halaman tetap terbuka tanpa internet.
    - Permintaan ke server Supabase tidak dicegat.
    Naikkan VERSI setiap ada perubahan agar cache lama dibuang. */
-var VERSI = 'agenda-v16';
-var INTI = ['./', 'index.html', 'manifest.webmanifest', 'logo/ikon-192.png', 'logo/ikon-512.png'];
+var VERSI = 'agenda-v17';
+var INTI = ['./', 'index.html', 'manifest.webmanifest', 'logo/ikon-192.png', 'logo/ikon-512.png', 'gambar/murrotal-nixs21.jpg'];
 var LIB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
 
 self.addEventListener('install', function (e) {
