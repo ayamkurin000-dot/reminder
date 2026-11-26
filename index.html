@@ -57,6 +57,12 @@ h2{font-size:18px;margin:26px 0 10px}
 .gt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
 .gt b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gt small{font-size:12px;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gn{flex:none;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:rgba(255,255,255,.22);white-space:nowrap}
+.gfoto{padding:0;cursor:zoom-in}.gfoto:hover{background:rgba(255,255,255,.22)}
+#lb{position:fixed;inset:0;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;background:rgba(0,0,0,.85)}
+#lb.on{display:flex}
+#lb img{display:block;width:auto;height:auto;max-width:min(512px,92vw);max-height:78vh;border-radius:12px;border:3px solid #fff;background:#222}
+#lb .lbn{color:#fff;font-weight:700;font-size:16px;text-align:center}
+#lb .x{position:absolute;top:max(12px,env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;padding:0;font-size:20px;line-height:1;color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.5)}
 .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px}
@@ -362,11 +368,22 @@ function put(it,ok){sb.from("agenda").upsert(clean(it)).then(function(r){
 function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)});sb.from("pembuat").delete().eq("agenda_id",id).then(function(){})}
 /* Catatan pembuat agenda (nama + email) khusus ditampilkan di akun admin. Disimpan di tabel terpisah "pembuat" agar tidak ikut terbaca di agenda publik. */
 var PEM={};
-function catat(it){if(!PROF.uid)return;var d={agenda_id:it.id,nama:PROF.nama||"",email:PROF.email||""};if(isAdmin){PEM[it.id]={agenda_id:it.id,nama:d.nama,email:d.email,user_id:PROF.uid};if(PROF.foto)FOTO[PROF.uid]=PROF.foto;render()}sb.from("pembuat").upsert(d).then(function(){})}
+function catat(it){if(!PROF.uid)return;var d={agenda_id:it.id,nama:PROF.nama||"",email:PROF.email||""};if(isAdmin){PEM[it.id]={agenda_id:it.id,nama:d.nama,email:d.email,user_id:PROF.uid};if(PROF.foto&&!FOTO[PROF.uid])FOTO[PROF.uid]=ringan(PROF.foto);render()}sb.from("pembuat").upsert(d).then(function(){})}
 var FOTO={};
 function loadPembuat(){if(!isAdmin)return;sb.from("pembuat").select("agenda_id,nama,email,user_id").then(function(r){if(r.error||!r.data)return;PEM={};var ids=[];r.data.forEach(function(x){PEM[x.agenda_id]=x;if(x.user_id&&ids.indexOf(x.user_id)<0)ids.push(x.user_id)});render();loadFoto(ids)})}
 /* Foto profil tiap akun untuk header kelompok (admin). Kalau gagal dibaca, header tetap memakai huruf inisial. */
-function loadFoto(ids){if(!ids.length)return;sb.from("profil").select("user_id,foto").in("user_id",ids).then(function(r){if(r.error||!r.data)return;r.data.forEach(function(x){if(x.foto)FOTO[x.user_id]=x.foto});render()})}
+function loadFoto(ids){if(!ids.length)return;sb.from("profil").select("user_id,foto").in("user_id",ids).then(function(r){if(r.error||!r.data)return;r.data.forEach(function(x){if(x.foto)FOTO[x.user_id]=ringan(x.foto)});render()})}
+function ringan(d){try{var p=d.split(","),m=/:(.*?);/.exec(p[0])[1],b=atob(p[1]),n=b.length,u=new Uint8Array(n);while(n--)u[n]=b.charCodeAt(n);return URL.createObjectURL(new Blob([u],{type:m}))}catch(e){return d}}
+/* Lightbox foto profil (admin): satu elemen dipakai ulang, gambar baru dipasang saat dibuka dan dilepas saat ditutup. */
+var LB;
+function bukaFoto(uid,nm){var u=FOTO[uid];if(!u)return;
+  if(!LB){LB=document.createElement("div");LB.id="lb";LB.setAttribute("role","dialog");LB.setAttribute("aria-modal","true");
+    LB.innerHTML='<button type="button" class="x" aria-label="Tutup">\u2715</button><img alt="" decoding="async"><div class="lbn"></div>';
+    document.body.appendChild(LB);LB.addEventListener("click",function(e){if(e.target.tagName!=="IMG")tutupFoto()})}
+  LB.querySelector("img").src=u;LB.querySelector(".lbn").textContent=nm||"";LB.classList.add("on");document.body.style.overflow="hidden"}
+function tutupFoto(){if(!LB)return;LB.classList.remove("on");LB.querySelector("img").removeAttribute("src");document.body.style.overflow=""}
+document.addEventListener("keydown",function(e){if(e.key==="Escape")tutupFoto()});
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".gfoto");if(b)bukaFoto(b.dataset.uid,b.dataset.nm)});
 function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;
   /* Kartu Al-Qur'an (dan notifikasi pasang) selalu tepat di bawah jendela pengumuman, baik sebelum maupun sesudah login. */
   var ex=$("extras"),ref=on?$("app").querySelector("section.hero"):$("pubwrap");if(ex&&ref)ref.insertAdjacentElement("afterend",ex)}
@@ -620,7 +637,7 @@ function grupPembuat(rows,fn){var G={},ks=[];
   rows.forEach(function(r){var p=PEM[r.it.id],k=p&&p.email?String(p.email).toLowerCase():"";if(!G[k]){G[k]={p:p,rows:[]};ks.push(k)}G[k].rows.push(r)});
   ks.sort(function(a,b){if(!a)return 1;if(!b)return-1;var x=(G[a].p.nama||a).toLowerCase(),y=(G[b].p.nama||b).toLowerCase();return x<y?-1:x>y?1:0});
   return ks.map(function(k){var g=G[k],h=hueOf(k||"x"),nm=k?(g.p.nama||k):"Pengguna belum tercatat";
-    return'<section class="gbox'+(k?'':' gx')+'" style="--h:'+h+';--h2:'+((h+40)%360)+'"><div class="gh"><span class="gav" aria-hidden="true">'+(FOTO[g.p&&g.p.user_id]?'<img src="'+esc(FOTO[g.p.user_id])+'" alt="">':esc(nm.charAt(0).toUpperCase()))+'</span><span class="gt"><b>'+esc(nm)+'</b>'+(k?'<small>'+esc(k)+'</small>':'')+'</span><span class="gn">'+g.rows.length+' agenda</span></div>'+g.rows.map(fn).join("")+'</section>'}).join("")}
+    return'<section class="gbox'+(k?'':' gx')+'" style="--h:'+h+';--h2:'+((h+40)%360)+'"><div class="gh">'+(FOTO[g.p&&g.p.user_id]?'<button type="button" class="gav gfoto" data-uid="'+esc(g.p.user_id)+'" data-nm="'+esc(nm)+'" aria-label="Lihat foto '+esc(nm)+'"><img src="'+esc(FOTO[g.p.user_id])+'" alt="" decoding="async" loading="lazy"></button>':'<span class="gav" aria-hidden="true">'+esc(nm.charAt(0).toUpperCase())+'</span>')+'<span class="gt"><b>'+esc(nm)+'</b>'+(k?'<small>'+esc(k)+'</small>':'')+'</span><span class="gn">'+g.rows.length+' agenda</span></div>'+g.rows.map(fn).join("")+'</section>'}).join("")}
 /* Teks kartu wajib 1 baris: kalau tidak muat di layar, ukuran hurufnya diperkecil otomatis. */
 function fitLines(){document.querySelectorAll("#list .fit").forEach(function(el){el.style.fontSize="";var fs=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+.5&&fs>8){fs-=.5;el.style.fontSize=fs+"px"}})}
 window.addEventListener("resize",fitLines);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLines);
