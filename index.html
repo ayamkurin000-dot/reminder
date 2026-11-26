@@ -590,8 +590,12 @@ function permaItems(){var t=today(),n=NAMA_BERGILIR.length;
 var PERMA_SHOWN=[];
 function isPerma(it){var nm=(it.name||"").toLowerCase();return PERMA_SHOWN.some(function(x){return nm.indexOf(x)>=0})}
 async function loadPublic(){
-  var g=urlGrup(),q=sb.from("agenda").select("id,name,cat,date,lead,note,grup").eq("publik",true);
-  if(g)q=q.eq("grup",g);
+  var g=urlGrup();
+  /* Alamat utama (tanpa kode kelompok) ditolak, kecuali untuk login admin. */
+  $("signup").hidden=!g;
+  if(!g){$("pubwrap").querySelector("h1").textContent="Akses ditolak";$("pubalerts").innerHTML='<p style="margin:0;line-height:1.5">Halaman ini hanya bisa dibuka lewat link kelompok yang dibagikan admin.</p>';return}
+  var q=sb.from("agenda").select("id,name,cat,date,lead,note,grup").eq("publik",true);
+  q=q.eq("grup",g);
   var r=await q,box=$("pubalerts"),noCol=false;
   if(r.error&&!g){noCol=true;r=await sb.from("agenda").select("id,name,cat,date,lead,note").eq("publik",true)}
   $("pubwrap").querySelector("h1").textContent="Pengumuman"+(g?" · "+GN[g]:"");
@@ -609,7 +613,7 @@ async function loadPublic(){
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
-  sb.auth.onAuthStateChange(function(ev,ses){if(ses){if(PROF.uid&&ses.user&&PROF.uid===ses.user.id&&(ev==="USER_UPDATED"||ev==="TOKEN_REFRESHED"||ev==="SIGNED_IN"))return;isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};show(false);loadPublic()}});
+  sb.auth.onAuthStateChange(function(ev,ses){if(ses){if(PROF.uid&&ses.user&&PROF.uid===ses.user.id&&(ev==="USER_UPDATED"||ev==="TOKEN_REFRESHED"||ev==="SIGNED_IN"))return;isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);if(!isAdmin&&!myGrup&&!urlGrup()){sb.auth.signOut();return}openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
