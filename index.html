@@ -311,6 +311,45 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 #auth input::placeholder{color:rgba(159,232,248,.5);-webkit-text-fill-color:rgba(159,232,248,.5)}
 #auth input::selection{background:rgba(0,229,255,.45);color:#fff}
 </style>
+<style id="tema">
+/* ===== Kartu agenda: jarak baris dirapatkan ===== */
+.item{gap:1px;padding:9px 12px 8px;margin-bottom:8px}
+.item .k-title,.item .k-due,.item .k-note{line-height:1.15}
+.k-title{font-size:16px}.k-due{font-size:14.5px}.k-note{font-size:12.5px}
+.k-acts{margin-top:5px}
+.k-acts button{padding-top:5px;padding-bottom:5px}
+.k-foot{min-height:22px;margin-top:3px}
+.k-tm{padding:2px 9px!important;font-size:12.5px;border-radius:99px;white-space:nowrap}
+.item .badge{padding:2px 10px}
+/* ===== Kartu profil menempel di atas (tidak ikut scroll) ===== */
+.prof{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;margin-bottom:10px;box-shadow:0 6px 14px -6px rgba(0,0,0,.35)}
+.gearbtn{flex:none;width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--bg)}
+.gearbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .5s}
+.gearbtn:hover svg,.gearbtn:active svg{transform:rotate(90deg)}
+/* ===== Tema kartu ===== */
+.tm{background:var(--cbg);color:var(--cink);border-top-color:var(--cbd);border-right-color:var(--cbd);border-bottom-color:var(--cbd);box-shadow:var(--csh,none)}
+.tm .k-title{color:var(--cink)}.tm .k-due{color:var(--cdue)}.tm .k-note,.tm .k-pub{color:var(--cmute)}
+.tm button{color:var(--cink);border-color:var(--cbd);background:transparent}
+.tm button:hover{background:var(--chov)}
+.tm button.pri{background:var(--cbtn);color:var(--cbtnink);border-color:var(--cbtn)}
+.tm button.pri:hover{background:var(--cbtn);opacity:.9}
+.tm button.del{color:var(--cdel)}
+.tm .badge{background:var(--cbadge)!important;color:var(--cbadgeink)!important}
+.th-futuristik{--cbg:linear-gradient(135deg,#070d1f,#1a1046 70%,#0b2a4a);--cink:#e6f9ff;--cdue:#ff6fd8;--cmute:#8fdcf0;--cbd:rgba(0,229,255,.55);--chov:rgba(0,229,255,.15);--cbtn:linear-gradient(90deg,#00e5ff,#8a5cff);--cbtnink:#021018;--cdel:#ff7aa8;--cbadge:rgba(0,229,255,.16);--cbadgeink:#7df3ff;--csh:0 0 12px rgba(0,229,255,.28),inset 0 0 14px rgba(138,92,255,.15)}
+.th-futuristik button.pri{background:linear-gradient(90deg,#00e5ff,#8a5cff);border-color:transparent}
+.th-nature{--cbg:linear-gradient(135deg,#eaf6df,#c6e5b2);--cink:#1d3a18;--cdue:#8c3a0f;--cmute:#4a6a3c;--cbd:#8dbf6e;--chov:rgba(60,120,40,.14);--cbtn:#2f7d32;--cbtnink:#fff;--cdel:#a62a1c;--cbadge:#d6efc4;--cbadgeink:#1f5a22}
+.th-sea{--cbg:linear-gradient(135deg,#dff6fa,#8fd3e6);--cink:#06324a;--cdue:#c2410c;--cmute:#235f7b;--cbd:#5cb8d2;--chov:rgba(0,100,140,.14);--cbtn:#0a5f8c;--cbtnink:#fff;--cdel:#b3261e;--cbadge:#c3ebf4;--cbadgeink:#064a6b}
+.th-sky{--cbg:linear-gradient(135deg,#eaf2ff,#b9d6ff);--cink:#13305c;--cdue:#5b3fd0;--cmute:#42628f;--cbd:#8fb8f2;--chov:rgba(30,80,180,.13);--cbtn:#2f5fd0;--cbtnink:#fff;--cdel:#b3261e;--cbadge:#d4e5ff;--cbadgeink:#1c458f}
+.th-rainbow{--cbg:linear-gradient(120deg,#ffe0e0,#fff1c9 25%,#e0f8dc 50%,#d8ecff 75%,#eadcff);--cink:#2b1f3a;--cdue:#c01e74;--cmute:#5a4b72;--cbd:#d9b6ee;--chov:rgba(150,60,200,.12);--cbtn:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#3b82f6,#8b5cf6);--cbtnink:#fff;--cdel:#b3261e;--cbadge:rgba(255,255,255,.75);--cbadgeink:#5b2a86}
+.th-rainbow button.pri{background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#3b82f6,#8b5cf6);text-shadow:0 1px 2px rgba(0,0,0,.45)}
+/* ===== Jendela pengaturan tema ===== */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.tsw{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:8px 10px!important;border-radius:10px;border:2px solid var(--cbd);line-height:1.2}
+.tsw b{font-size:14px}.tsw small{font-size:12px;opacity:.9}
+.tsw.on{outline:3px solid #4c8dff;outline-offset:1px}
+.tsw.def{background:var(--card);color:var(--ink);border-color:var(--line)}
+.tsw.def small{color:var(--mute)}
+</style>
 </head>
 <body>
 <main>
@@ -354,7 +393,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <div id="app" hidden>
 <div id="prof" class="prof">
   <div class="pleft"><div class="pinfo" id="pedit" role="button" tabindex="0" style="cursor:pointer" aria-label="Ubah profil"><b id="pnama"></b><small id="pemail"></small></div></div>
-  <div class="pright"><span id="pgrup" class="pgrup" hidden></span><button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button></div>
+  <div class="pright"><button type="button" id="gearbtn" class="gearbtn" aria-label="Pengaturan tampilan kartu" title="Pengaturan tampilan kartu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.5-2-3.5-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14.100 2.500h-4l-.4 2.400a7.600 7.600 0 0 0-2.600 1.500l-2.300-.9-2 3.500 2 1.500a7.700 7.700 0 0 0 0 3l-2 1.500 2 3.500 2.300-.9a7.600 7.600 0 0 0 2.600 1.500l.4 2.400h4l.4-2.400a7.600 7.600 0 0 0 2.600-1.500l2.300.9 2-3.500z"/></svg></button><span id="pgrup" class="pgrup" hidden></span><button type="button" id="avbtn" class="avbtn" aria-label="Ubah foto profil"><img id="avimg" alt="Foto profil" width="56" height="56"><span class="avedit" aria-hidden="true">✎</span></button></div>
 </div>
 <div class="psavebar" id="psavebar" hidden><button type="button" class="pri" id="psimpan" disabled>Simpan foto profil</button><span class="meta" id="pstat"></span></div>
 <section class="hero" aria-live="polite">
@@ -426,6 +465,14 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 <div id="lbox" class="pmodal lbox" hidden role="dialog" aria-modal="true" aria-label="Foto profil">
   <div class="lwrap"><img id="limg" alt="Foto profil ukuran asli">
     <div class="prow" style="margin-top:12px"><button type="button" class="pri" id="lganti">📷 Ganti foto</button><button type="button" id="ltutup">Tutup</button></div>
+  </div>
+</div>
+<div id="tmodal" class="pmodal" hidden role="dialog" aria-modal="true" aria-labelledby="tttl">
+  <div class="pbox">
+    <h2 id="tttl" style="margin:0 0 2px">Tema kartu</h2>
+    <p id="tsub" class="meta" style="margin:0"></p>
+    <div id="tgrid" class="tgrid"></div>
+    <div class="prow"><button type="button" class="pri" id="ttutup">Selesai</button></div>
   </div>
 </div>
 <input id="pinp" type="file" accept="image/*" hidden>
@@ -710,6 +757,24 @@ function tglRoll(d,k,n){var t=fmt(d),i=0,kk=k||0,o=((kk*Math.min(2,6/Math.max(1,
   var w=t.split(" ").map(function(kata){return'<span class="tw">'+kata.split("").map(function(c){var v=(Math.imul(i+1+kk*17,2654435761)>>>13)%6;return'<span class="tc2 sp'+v+'" style="--i:'+(i++)+'">'+c+'</span>'}).join("")+'</span>'}).join(" ");
   return'<span class="tgl" style="--o:'+o+'s;--d:'+dur+'s" role="text" aria-label="'+esc(t)+'"><span aria-hidden="true">'+w+'</span></span>'}
 function kosongHtml(sub){return'<div class="kosong"><span class="kic" aria-hidden="true">\ud83d\uddd3\ufe0f</span><b>Belum ada agenda</b><small>'+sub+'</small></div>'}
+/* ===== Tema kartu agenda (disimpan di perangkat ini) ===== */
+var TEMA_LIST=[["futuristik","Futuristik","Neon cyan & ungu"],["nature","Nature","Hijau daun"],["sea","Sea","Biru laut"],["sky","Sky","Biru langit"],["rainbow","Rainbow","Pelangi"]];
+var TEMA=(function(){try{var o=JSON.parse(localStorage.getItem("agenda_tema_v1")||"{}");return{all:o.all||"",map:o.map||{}}}catch(e){return{all:"",map:{}}}})();
+var temaTarget=null;
+function temaSave(){try{localStorage.setItem("agenda_tema_v1",JSON.stringify(TEMA))}catch(e){}}
+function temaOf(id){var t=TEMA.map[id]||TEMA.all||"";return TEMA_LIST.some(function(x){return x[0]===t})?t:""}
+function temaOpen(id){temaTarget=id===undefined?null:id;
+  $("tttl").textContent=temaTarget===null?"Tema semua kartu":"Tema kartu ini";
+  $("tsub").textContent=temaTarget===null?"Dipakai untuk semua kartu agenda. Pilihan per kartu akan diganti.":"Hanya mengubah kartu yang dipilih.";
+  temaDraw();$("tmodal").hidden=false}
+function temaDraw(){var cur=temaTarget===null?TEMA.all:temaOf(temaTarget);
+  $("tgrid").innerHTML='<button type="button" class="tsw def'+(!cur?' on':'')+'" data-t=""><b>Bawaan</b><small>Putih polos</small></button>'+TEMA_LIST.map(function(t){return'<button type="button" class="tsw tm th-'+t[0]+(cur===t[0]?' on':'')+'" data-t="'+t[0]+'"><b>'+t[1]+'</b><small>'+t[2]+'</small></button>'}).join("")}
+$("gearbtn").addEventListener("click",function(){temaOpen()});
+$("tgrid").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var t=b.dataset.t;
+  if(temaTarget===null){TEMA.all=t;TEMA.map={}}else{if(t)TEMA.map[temaTarget]=t;else{delete TEMA.map[temaTarget];if(TEMA.all){TEMA.map[temaTarget]="-"}}}
+  temaSave();temaDraw();render()});
+$("ttutup").addEventListener("click",function(){$("tmodal").hidden=true});
+$("tmodal").addEventListener("click",function(e){if(e.target===$("tmodal"))$("tmodal").hidden=true});
 function render(){
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){var i=info(it);return{it:it,i:i,mute:isAdmin&&isSenyap(it,i)}}).sort(function(a,b){return a.i.left-b.i.left});
@@ -723,9 +788,9 @@ function render(){
   if(isAdmin){if(openG===null){$("list").innerHTML="";return}rows=rows.filter(function(r){return gk(r.it)===openG})}
   var cardHtml=function(r){var it=r.it,c=CAT[it.cat];
     var rn=c.mode==="renew"?'<button class="pri k-sdh" data-a="renew" data-id="'+it.id+'" title="Sudah diperpanjang (+'+c.step+' thn)" aria-label="Sudah diperpanjang (+'+c.step+' thn)"><b>SUDAH</b><small>SUDAH DIPERPANJANG</small></button>':'';
-    return '<div class="item '+r.i.st+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
+    var th=temaOf(it.id);return '<div class="item '+r.i.st+(th?' tm th-'+th:'')+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
     +'<div class="k-acts">'+rn+(isAdmin?'<button data-a="mute" data-id="'+it.id+'">'+(r.mute?'\ud83d\udd14 Aktifkan':'\ud83d\udd15 Senyap')+'</button>':'')+'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div>'
-    +'<div class="k-foot">'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
+    +'<div class="k-foot"><button type="button" class="k-tm" data-a="tema" data-id="'+it.id+'" aria-label="Atur tema kartu">\ud83c\udfa8 Tema</button>'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
   $("list").innerHTML=rows.length?(isAdmin?grupPembuat(rows,cardHtml):rows.map(cardHtml).join(""))
     :'<div class="empty">'+kosongHtml("Tambahkan agenda pertama di formulir bawah.")+'</div>';
   fitLines();
@@ -741,6 +806,7 @@ function grupPembuat(rows,fn){var G={},ks=[];
 function fitLines(){document.querySelectorAll("#list .fit").forEach(function(el){el.style.fontSize="";var fs=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+.5&&fs>8){fs-=.5;el.style.fontSize=fs+"px"}})}
 window.addEventListener("resize",fitLines);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitLines);
 $("list").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=+b.dataset.id,it=items.find(function(x){return x.id===id});if(!it)return;
+  if(b.dataset.a==="tema"){temaOpen(id);return}
   if(b.dataset.a==="renew"){it.date=addYears(it.date,CAT[it.cat].step);if(it.cat==="stnk"&&it.vehicle)it.name=buildName(it);put(it,function(){notif("Berhasil diperbarui","Tanggal agenda sudah diperpanjang.")});render()}
   else if(b.dataset.a==="mute"){var inf=info(it);var mati=!isSenyap(it,inf);it.senyap=isSenyap(it,inf)?"":iso(inf.date);put(it,function(){notif("Berhasil menyimpan",mati?"Pengingat agenda disenyapkan.":"Pengingat agenda diaktifkan lagi.")});render()}
   else if(b.dataset.a==="del"){if(confirm("Hapus agenda “"+it.name+"”?")){items=items.filter(function(x){return x.id!==id});rm(id,function(){notif("Agenda dihapus","Agenda sudah dihapus dari daftar.")});render()}}
