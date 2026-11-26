@@ -29,6 +29,7 @@ main{max-width:760px;margin:0 auto;padding:16px}
 .alert:first-of-type{border-top:0;padding-top:0}
 .alert .num{font-size:34px;font-weight:800;line-height:1;min-width:76px}
 .alert .t{font-weight:600}.alert small{display:block;opacity:.75}
+.alert.adm .t{min-width:0;flex:1}.alert.adm .l1,.alert.adm small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.alert.adm small{font-size:12px}.alert.adm .l3{font-size:11px;opacity:.65}
 .aman{margin:0;font-size:20px;font-family:Archivo;font-weight:700}
 h2{font-size:18px;margin:26px 0 10px}
 .item{background:var(--card);border:1px solid var(--line);border-left-width:6px;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:4px 12px}
@@ -338,14 +339,18 @@ function clean(it){return{id:it.id,name:it.name,cat:it.cat,date:it.date,lead:it.
 function put(it,ok){sb.from("agenda").upsert(clean(it)).then(function(r){
   if(r.error&&/grup|senyap/i.test(r.error.message||"")){var c=clean(it);delete c.grup;delete c.senyap;sb.from("agenda").upsert(c).then(function(r2){if(r2.error)fail(r2.error);else if(ok)ok()});return}
   if(r.error)fail(r.error);else if(ok)ok()})}
-function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)})}
+function rm(id){sb.from("agenda").delete().eq("id",id).then(function(r){if(r.error)fail(r.error)});sb.from("pembuat").delete().eq("agenda_id",id).then(function(){})}
+/* Catatan pembuat agenda (nama + email) khusus ditampilkan di akun admin. Disimpan di tabel terpisah "pembuat" agar tidak ikut terbaca di agenda publik. */
+var PEM={};
+function catat(it){if(!PROF.uid)return;var d={agenda_id:it.id,nama:PROF.nama||"",email:PROF.email||""};if(isAdmin){PEM[it.id]=d;render()}sb.from("pembuat").upsert(d).then(function(){})}
+function loadPembuat(){if(!isAdmin)return;sb.from("pembuat").select("agenda_id,nama,email").then(function(r){if(r.error||!r.data)return;PEM={};r.data.forEach(function(x){PEM[x.agenda_id]=x});render()})}
 function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;
   /* Kartu Al-Qur'an (dan notifikasi pasang) selalu tepat di bawah jendela pengumuman, baik sebelum maupun sesudah login. */
   var ex=$("extras"),ref=on?$("app").querySelector("section.hero"):$("pubwrap");if(ex&&ref)ref.insertAdjacentElement("afterend",ex)}
 async function loadRows(){
   var r=await sb.from("agenda").select("*");
   if(r.error){try{var c=localStorage.getItem("agenda-cache");if(c){items=norm(JSON.parse(c));render();setSync("Mode offline: menampilkan data terakhir yang tersimpan.");return}}catch(e){}fail(r.error);return}
-  items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();setSync(isAdmin?"Admin: menampilkan data semua pengguna.":"Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
+  items=norm(r.data);try{localStorage.setItem("agenda-cache",JSON.stringify(items))}catch(e){}render();loadPembuat();setSync(isAdmin?"Admin: menampilkan data semua pengguna.":"Tersinkron: agenda tampil di semua perangkat tempat kamu masuk.")}
 /* Agenda bergilir: 2 slot. Setiap slot menampilkan satu nama sampai jatuh tempo lewat, lalu diganti nama berikutnya di daftar.
    Slot 1: Alby, Fatih, Aziz, ... (indeks genap) | Slot 2: Val El, Azam, Fabio, ... (indeks ganjil). Daftar berputar kembali ke awal. */
 var NAMA_BERGILIR=["Alby","Val El","Fatih","Azam","Aziz","Fabio","Chacha","Alin","Lintang","Eliza","Aufa","Akmal","Arvatan","Sabil","Ahsin"];
@@ -572,7 +577,8 @@ function render(){
   var al=rows.filter(function(r){return isAdmin?(r.i.left<ADMIN_HARI&&!r.mute):r.i.st!=="ok"});
   $("alerts").innerHTML=!items.length?kosongHtml("Agenda yang ditambahkan akan tampil di sini."):al.length?al.map(function(r){
     var n=r.i.left<0?"−"+(-r.i.left):r.i.left;
-    return '<div class="alert"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t">'+rich(r.it.name)+'<small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(isAdmin&&gk(r.it)?" · "+esc(GN[gk(r.it)]):"")+(r.it.note?" · "+esc(r.it.note):"")+'</small></div></div>'}).join("")
+    var pm=isAdmin?PEM[r.it.id]:null,who=isAdmin?'<small class="l3">\ud83d\udc64 '+(pm&&(pm.nama||pm.email)?esc(pm.nama||"-")+" · "+esc(pm.email||"-"):"Pengguna belum tercatat")+'</small>':"";
+    return '<div class="alert'+(isAdmin?' adm':'')+'"><div class="num'+numCls(r.i.left)+'">'+(r.i.left===0?"Hari ini":n+" hr")+'</div><div class="t"><div class="l1">'+rich(r.it.name)+'</div><small>'+(r.i.left<0?"Lewat dari ":"Batas ")+fmt(r.i.date)+(isAdmin&&gk(r.it)?" · "+esc(GN[gk(r.it)]):"")+(r.it.note?" · "+esc(r.it.note):"")+'</small>'+who+'</div></div>'}).join("")
     :'<p class="aman">'+(isAdmin?"Tidak ada agenda yang jatuh tempo kurang dari "+ADMIN_HARI+" hari.":"Tidak ada agenda yang perlu diurus sekarang.")+'</p>';
   renderFolders(rows);
   if(isAdmin){if(openG===null){$("list").innerHTML="";return}rows=rows.filter(function(r){return gk(r.it)===openG})}
@@ -632,7 +638,7 @@ $("f").addEventListener("submit",function(e){e.preventDefault();
   if(isAdmin)o.grup=$("grp").value;
   if(editId){rec=items.find(function(x){return x.id===editId});Object.assign(rec,o)}
   else{o.id=Date.now();if(!isAdmin)o.grup=defGrup();items.push(o);rec=o}
-  var wasEdit=!!editId;put(rec,function(){notifSimpan(wasEdit)});reset();render()});
+  var wasEdit=!!editId;put(rec,function(){notifSimpan(wasEdit);if(!wasEdit||!isAdmin)catat(rec)});reset();render()});
 function opt(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;return o}
 function buildDate(){
   var y=today().getFullYear(),i;
