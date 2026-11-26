@@ -319,8 +319,13 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 .k-acts{margin-top:5px}
 .k-acts button{padding-top:5px;padding-bottom:5px}
 .k-foot{min-height:22px;margin-top:3px}
-.k-no{min-width:26px;height:24px;padding:0 8px;display:inline-grid;place-items:center;border-radius:99px;font:800 13px/1 Archivo,system-ui,sans-serif;background:var(--okbg);color:var(--ok)}
-.tm .k-no{background:var(--cbadge);color:var(--cbadgeink)}
+.item{position:relative}
+.k-no{position:absolute;top:-9px;left:-9px;z-index:2;min-width:24px;height:24px;padding:0 5px;display:grid;place-items:center;border-radius:99px;font:800 13px/1 Archivo,system-ui,sans-serif;background:var(--cno,#1d3557);color:var(--cnoink,#fff);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.th-futuristik{--cno:#ffe14d;--cnoink:#1a1046}
+.th-nature{--cno:#e8590c;--cnoink:#fff}
+.th-sea{--cno:#ff6b3d;--cnoink:#fff}
+.th-sky{--cno:#ffb020;--cnoink:#3a2200}
+.th-rainbow{--cno:#1f2937;--cnoink:#fff}
 .item .badge{padding:2px 10px}
 /* ===== Kartu profil menempel di atas (tidak ikut scroll) ===== */
 .prof{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;margin-bottom:10px;box-shadow:0 6px 14px -6px rgba(0,0,0,.35)}
@@ -798,9 +803,9 @@ function render(){
   var nomor=0;
   var cardHtml=function(r){var it=r.it,c=CAT[it.cat];
     var rn=c.mode==="renew"?'<button class="pri k-sdh" data-a="renew" data-id="'+it.id+'" title="Sudah diperpanjang (+'+c.step+' thn)" aria-label="Sudah diperpanjang (+'+c.step+' thn)"><b>SUDAH</b><small>SUDAH DIPERPANJANG</small></button>':'';
-    nomor++;var th=temaOf(it.id);return '<div class="item '+r.i.st+(th?' tm th-'+th:'')+'"><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
+    nomor++;var th=temaOf(it.id);return '<div class="item '+r.i.st+(th?' tm th-'+th:'')+'"><span class="k-no" aria-label="Nomor urut '+nomor+'">'+nomor+'</span><div class="k-title fit">'+esc(it.name)+'</div><div class="k-due fit">Jatuh tempo : '+fmt(r.i.date)+'</div>'+(it.note?'<div class="k-note fit">'+esc(String(it.note).toUpperCase())+'</div>':'')
     +'<div class="k-acts">'+rn+(isAdmin?'<button data-a="mute" data-id="'+it.id+'">'+(r.mute?'\ud83d\udd14 Aktifkan':'\ud83d\udd15 Senyap')+'</button>':'')+'<button data-a="edit" data-id="'+it.id+'">Ubah</button><button class="del" data-a="del" data-id="'+it.id+'">Hapus</button></div>'
-    +'<div class="k-foot"><span class="k-no" aria-label="Nomor urut '+nomor+'">'+nomor+'</span>'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
+    +'<div class="k-foot">'+(r.mute?'<span class="k-pub">\ud83d\udd15 senyap</span>':'')+'<span class="k-r">'+(it.publik?'<span class="k-pub">\ud83c\udf10 publik</span>':'')+'<span class="badge">'+r.i.txt+'</span></span></div></div>'};
   $("list").innerHTML=rows.length?(isAdmin?grupPembuat(rows,cardHtml):rows.map(cardHtml).join(""))
     :'<div class="empty">'+kosongHtml("Tambahkan agenda pertama di formulir bawah.")+'</div>';
   fitLines();
