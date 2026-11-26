@@ -216,11 +216,13 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @keyframes tmembal{50%{transform:scale(1.25)}}
 @keyframes tbar{to{transform:scaleX(0)}}
 @keyframes tcf{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}}
-/* Tanggal batas: merah menyala, huruf berputar (dipelintir) dari kiri ke kanan, jeda, lalu ulang. Tiap kartu punya jeda mulai berbeda (--o) agar tidak berbarengan. */
+/* Tanggal batas: merah menyala. Tiap huruf berputar (spin) bersamaan, tapi berhentinya tidak sama (varian sp0-sp5), sehingga teks tanggal terbentuk bertahap. Lalu jeda sejenak dan spin lagi.
+   Tiap kartu punya lama siklus (--d) dan jeda mulai (--o) berbeda, serta urutan berhenti huruf yang berbeda, agar tampak bervariasi dan tidak berbarengan. */
 .tgl{color:#ff4033;font-weight:800;text-shadow:0 0 3px rgba(255,64,51,.75),0 0 8px rgba(255,64,51,.35)}
 .tgl .tw{display:inline-block;white-space:nowrap}
-.tgl .tc2{display:inline-block;transform-origin:50% 55%;animation:pelintir 6s ease-in-out infinite;animation-delay:calc(var(--o,0s) + var(--i,0)*.07s)}
-@keyframes pelintir{0%{transform:perspective(220px) rotateX(0) scale(1)}6%{transform:perspective(220px) rotateX(180deg) scale(1.18)}12%,100%{transform:perspective(220px) rotateX(360deg) scale(1)}}
+.tgl .tc2{display:inline-block;transform-origin:50% 55%;animation-duration:var(--d,6s);animation-delay:var(--o,0s);animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.25,.65,.2,1)}
+.tgl .sp0{animation-name:sp0}.tgl .sp1{animation-name:sp1}.tgl .sp2{animation-name:sp2}.tgl .sp3{animation-name:sp3}.tgl .sp4{animation-name:sp4}.tgl .sp5{animation-name:sp5}
+@keyframes sp0{0%{transform:perspective(260px) rotateY(0)}14%,100%{transform:perspective(260px) rotateY(1080deg)}}@keyframes sp1{0%{transform:perspective(260px) rotateY(0)}19%,100%{transform:perspective(260px) rotateY(1440deg)}}@keyframes sp2{0%{transform:perspective(260px) rotateY(0)}24%,100%{transform:perspective(260px) rotateY(1080deg)}}@keyframes sp3{0%{transform:perspective(260px) rotateY(0)}30%,100%{transform:perspective(260px) rotateY(1800deg)}}@keyframes sp4{0%{transform:perspective(260px) rotateY(0)}36%,100%{transform:perspective(260px) rotateY(1440deg)}}@keyframes sp5{0%{transform:perspective(260px) rotateY(0)}43%,100%{transform:perspective(260px) rotateY(1800deg)}}
 #toastok.err2{background:linear-gradient(135deg,#7f1d1d,#dc2626)}
 #toastok.err2 .tc{stroke:#fecaca}
 #toastok.err2.show{animation:tgetar .5s ease-out}
@@ -623,9 +625,9 @@ function notif(judul,sub,gagal){
   el.innerHTML='<svg class="tck" viewBox="0 0 52 52" aria-hidden="true"><circle class="tc" cx="26" cy="26" r="23"/>'+ik+'</svg><div class="tt"><b>'+esc(judul)+'</b><small>'+esc(sub||"")+'</small></div><i class="tbar"></i>'+cf;
   el.className=(gagal?"err2 ":"")+"show";toastT=setTimeout(function(){el.className=""},gagal?4500:3200)}
 function notifSimpan(edit){notif("Berhasil menyimpan",edit?"Perubahan agenda sudah tersimpan.":"Agenda baru sudah ditambahkan.")}
-function tglRoll(d,k,n){var t=fmt(d),i=0,o=(((k||0)*Math.min(2,6/Math.max(1,n||1)))%6).toFixed(2);
-  var w=t.split(" ").map(function(kata){return'<span class="tw">'+kata.split("").map(function(c){return'<span class="tc2" style="--i:'+(i++)+'">'+c+'</span>'}).join("")+'</span>'}).join(" ");
-  return'<span class="tgl" style="--o:'+o+'s" role="text" aria-label="'+esc(t)+'"><span aria-hidden="true">'+w+'</span></span>'}
+function tglRoll(d,k,n){var t=fmt(d),i=0,kk=k||0,o=((kk*Math.min(2,6/Math.max(1,n||1)))%6).toFixed(2),dur=(5.6+(kk%4)*0.7).toFixed(1);
+  var w=t.split(" ").map(function(kata){return'<span class="tw">'+kata.split("").map(function(c){var v=(Math.imul(i+1+kk*17,2654435761)>>>13)%6;return'<span class="tc2 sp'+v+'" style="--i:'+(i++)+'">'+c+'</span>'}).join("")+'</span>'}).join(" ");
+  return'<span class="tgl" style="--o:'+o+'s;--d:'+dur+'s" role="text" aria-label="'+esc(t)+'"><span aria-hidden="true">'+w+'</span></span>'}
 function kosongHtml(sub){return'<div class="kosong"><span class="kic" aria-hidden="true">\ud83d\uddd3\ufe0f</span><b>Belum ada agenda</b><small>'+sub+'</small></div>'}
 function render(){
   $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
