@@ -404,10 +404,10 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
 @media (prefers-reduced-motion:reduce){.tl-t,.tl-t::before,.tl-t::after,.tl-s,.tl-smoke i,#pubwrap.tolak .pubhero{animation:none!important}.tl-t::before,.tl-t::after{display:none}.tl-smoke{display:none}}
 
 /* ===== Kartu folder: lonceng + nama, baris bawah teks kecil; ikut tema ===== */
-.fcard{display:grid;grid-template-columns:auto 1fr;column-gap:9px;row-gap:1px;align-items:center;min-height:0;padding:11px 12px;--b1:#aab3c0;--b2:#aab3c0;--b3:#6b7686}
+.fcard{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:9px;row-gap:1px;align-items:center;min-height:0;padding:11px 12px;--b1:#aab3c0;--b2:#aab3c0;--b3:#6b7686}
 .fcard .ic,.fcard .ic.lb{grid-column:1;grid-row:1/3;width:32px;height:32px;margin:0;display:block;animation:none}
 .fcard .ic svg,.fcard .lb svg{width:32px;height:32px;display:block;overflow:visible}
-.fcard b{grid-column:2;grid-row:1;margin:0;font-size:15px;line-height:1.15;align-self:end}
+.fcard b{grid-column:2;grid-row:1;margin:0;font-size:15px;line-height:1.15;align-self:end;white-space:nowrap;overflow:hidden;min-width:0}
 .fcard .meta{grid-column:2;grid-row:2;font-size:11px;line-height:1.2;align-self:start}
 .fcard.soon{--b1:#4ade80;--b2:#22c55e;--b3:#166534}
 .fcard.hot{--b1:#f87171;--b2:#ef4444;--b3:#991b1b}
@@ -837,7 +837,10 @@ function renderFolders(rows){
   if(un.length)gs.push(["","Tanpa kelompok"]);
   box.innerHTML='<h2>Folder kelompok</h2><div style="margin:-4px 0 10px"><button type="button" class="'+tc.trim()+'" data-copyall="1">🔗 Salin semua link kelompok</button></div><div class="fgrid">'+gs.map(function(g){
     var rs=rows.filter(function(r){return gk(r.it)===g[0]}),mt=rs.filter(function(r){return r.mute}),soon=rs.filter(function(r){return r.i.left<ADMIN_HARI&&!r.mute}),hot=soon.filter(function(r){return r.i.left<=5});
-    return '<div class="fw"><button type="button" class="fcard'+(hot.length?' hot soon':soon.length?' soon':'')+tc+'" data-g="'+esc(g[0])+'"><span class="ic'+(soon.length?' lb':'')+'">'+bellSvg(!!soon.length)+'</span><b>'+esc(g[1])+'</b><span class="meta">'+rs.length+' agenda'+(mt.length?' \u00b7 \ud83d\udd15 '+mt.length+' senyap':'')+'</span></button>'+(g[0]?'<button type="button" class="flink'+tc+'" data-copy="'+esc(g[0])+'">🔗 Salin link</button>':'')+'</div>'}).join("")+'</div>'}
+    return '<div class="fw"><button type="button" class="fcard'+(hot.length?' hot soon':soon.length?' soon':'')+tc+'" data-g="'+esc(g[0])+'"><span class="ic'+(soon.length?' lb':'')+'">'+bellSvg(!!soon.length)+'</span><b>'+esc(g[1])+'</b><span class="meta">'+rs.length+' agenda'+(mt.length?' \u00b7 \ud83d\udd15 '+mt.length+' senyap':'')+'</span></button></div>'}).join("")+'</div>';fitFolders()}
+function fitFolders(){document.querySelectorAll("#folders .fcard b").forEach(function(el){el.style.fontSize="";var fs=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+.5&&fs>8){fs-=.5;el.style.fontSize=fs+"px"}})}
+window.addEventListener("resize",fitFolders);
+try{document.fonts&&document.fonts.ready.then(fitFolders)}catch(e){}
 var toastT;
 function notif(judul,sub,gagal){
   var el=document.getElementById("toastok");
