@@ -534,7 +534,7 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
     <label style="margin-top:10px">Jenis kelamin (menentukan foto bawaan)<select id="pjk"><option value="">Pilih…</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
     <div class="sfoto" style="margin-top:10px"><div class="meta" style="font-weight:600;margin-bottom:6px">Foto profil</div><div class="sfrow"><img id="pimg" alt="Foto profil" width="72" height="72"><button type="button" class="pri" id="pfoto">📷 Pilih foto profil</button></div></div>
     <p class="err" id="perr" role="alert"></p>
-    <div class="prow" style="margin-top:6px"><button type="button" class="pri" id="psave">Simpan</button><button type="button" id="pcancel">Batal</button></div>
+    <div class="prow" style="margin-top:6px"><button type="button" class="pri" id="psave">Simpan</button><button type="button" id="pcancel">Batal</button><button type="button" id="pkeluar" hidden>Keluar</button></div>
   </div>
 </div>
 <div id="fmodal" class="pmodal" hidden role="dialog" aria-modal="true" aria-label="Atur foto profil">
@@ -731,7 +731,11 @@ document.addEventListener("click",function(e){var c=e.target.closest("[data-copy
   if(a){salin(GRUP.map(function(g){return g[1]+": "+gLink(g[0])}).join("\n"),a)}});
 $("folders").addEventListener("click",function(e){if(e.target.closest("[data-copy],[data-copyall]"))return;var b=e.target.closest("[data-g]");if(!b)return;openG=b.dataset.g;if(editId===null)$("grp").value=openG;render();window.scrollTo({top:0,behavior:"smooth"})});
 $("fback").addEventListener("click",function(){openG=null;render()});
-$("logout").addEventListener("click",function(){sb.auth.signOut()});
+/* Keluar: tetap berhasil walau jaringan HP lemah (sesi lokal dihapus paksa lalu halaman dimuat ulang) */
+async function keluar(){try{await Promise.race([sb.auth.signOut({scope:"local"}),new Promise(function(r){setTimeout(r,2500)})])}catch(e){}
+  try{Object.keys(localStorage).forEach(function(k){if(/^sb-.*-auth-token/.test(k))localStorage.removeItem(k)})}catch(e){}
+  location.reload()}
+$("logout").addEventListener("click",keluar);$("pkeluar").addEventListener("click",keluar);
 /* ===== Profil: nama lengkap + foto (crop, putar, geser) ===== */
 var PROF={nama:"",jk:"",foto:"",uid:""},PMAND=false,PEND,SIGNFOTO="",FTARGET="profil";
 function svgUri(x){return"data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#e2e8f0"/>'+x+'</svg>')}
@@ -771,7 +775,7 @@ async function loadProfil(user){var m=user.user_metadata||{};
       else{try{localStorage.removeItem("foto-daftar")}catch(e){}}}}catch(e){}
   if(!PROF.nama||!PROF.jk||!normHp(PROF.hp)||!PROF.foto)openProf(true)}
 /* --- nama & jenis kelamin --- */
-function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("perr").className="err";$("perr").textContent="";
+function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("pkeluar").hidden=!PMAND;$("perr").className="err";$("perr").textContent="";
   $("pttl").textContent=must?"Lengkapi profil kamu":"Ubah profil";
   $("psub").textContent=must?"Lengkapi nama lengkap, nomor HP, jenis kelamin, dan foto profil dulu ya. Semuanya wajib diisi.":"";
   $("pnamaIn").value=PROF.nama;$("phpIn").value=PROF.hp||"";$("pjk").value=PROF.jk;paintPm()}
