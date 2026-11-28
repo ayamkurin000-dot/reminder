@@ -479,7 +479,7 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
 <h2>Login</h2>
 <form id="af">
   <p class="meta" id="reg-grp" hidden style="margin:0 0 4px;font-weight:700"></p>
-  <label>Email<input id="em" type="email" required autocomplete="email"></label>
+  <label>Email<input id="em" type="text" inputmode="email" required autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="Contoh: nama@gmail.com"></label>
   <label id="lbl-nama" hidden>Nama lengkap<input id="nama" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ma'ruf Akbar"></label>
   <label id="lbl-hp" hidden>Nomor HP / WhatsApp (wajib)<input id="hp" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="Contoh: 081234567890"></label>
   <p class="meta" id="hp-note" hidden style="margin:-4px 0 0;font-weight:600">ℹ️ Nomor HP dipakai untuk pemberitahuan dari admin terkait jadwal HER STNK / SIM sebelum jatuh tempo.</p>
@@ -651,7 +651,11 @@ function bukaFoto(uid,nm){var u=FOTO[uid];if(!u)return;
 function tutupFoto(){if(!LB)return;LB.classList.remove("on");LB.querySelector("img").removeAttribute("src");document.body.style.overflow=""}
 document.addEventListener("keydown",function(e){if(e.key==="Escape")tutupFoto()});
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".gfoto");if(b)bukaFoto(b.dataset.uid,b.dataset.nm)});
-function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;
+/* Email default @gmail.com: diisi otomatis sekali saat form masuk/daftar tampil (kursor di depan, tinggal ketik nama). Kalau user menghapusnya, tidak diisi ulang. */
+var EMDEF="@gmail.com",EMDONE=false;
+function prefillEm(){if(EMDONE)return;EMDONE=true;var em=$("em");if(!em)return;if(!em.value)em.value=EMDEF;
+  em.addEventListener("focus",function(){if(em.value===EMDEF)setTimeout(function(){try{em.setSelectionRange(0,0)}catch(e){}},0)})}
+function show(on){$("auth").hidden=on;$("pubwrap").hidden=on;$("app").hidden=!on;if(!on)prefillEm();
   /* Kartu Al-Qur'an (dan notifikasi pasang) selalu tepat di bawah jendela pengumuman, baik sebelum maupun sesudah login. */
   var ex=$("extras"),ref=on?$("app").querySelector("section.hero"):$("pubwrap");if(ex&&ref)ref.insertAdjacentElement("afterend",ex)}
 async function loadRows(){
