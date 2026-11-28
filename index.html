@@ -679,7 +679,7 @@ async function loadPublic(){
 async function initDb(){
   if(SB_URL.indexOf("ISI_")===0){show(false);$("aerr").textContent="Isi SB_URL dan SB_KEY di file ini terlebih dulu.";return}
   sb=supabase.createClient(SB_URL,SB_KEY);
-  sb.auth.onAuthStateChange(function(ev,ses){if(ses){if(PROF.uid&&ses.user&&PROF.uid===ses.user.id&&(ev==="USER_UPDATED"||ev==="TOKEN_REFRESHED"||ev==="SIGNED_IN"))return;isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);if(!isAdmin&&!myGrup&&!urlGrup()){sb.auth.signOut();return}openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};show(false);loadPublic()}});
+  sb.auth.onAuthStateChange(function(ev,ses){if(ses){if(PROF.uid&&ses.user&&PROF.uid===ses.user.id&&(ev==="USER_UPDATED"||ev==="TOKEN_REFRESHED"||ev==="SIGNED_IN"))return;isAdmin=!!(ses.user&&ses.user.email&&ses.user.email.toLowerCase()===ADMIN_EMAIL);myGrup=okG(ses.user&&ses.user.user_metadata&&ses.user.user_metadata.grup);if(!isAdmin&&!myGrup&&!urlGrup()){sb.auth.signOut();return}openG=null;$("lbl-grp").hidden=!isAdmin;show(true);loadRows();loadProfil(ses.user)}else{isAdmin=false;myGrup="";openG=null;$("lbl-grp").hidden=true;items=[];PROF={nama:"",jk:"",foto:"",uid:""};PMAND=false;$("pmodal").hidden=true;show(false);loadPublic()}});
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
@@ -689,6 +689,7 @@ $("backlogin").addEventListener("click",function(){setReg(false)});
 function normHp(v){var d=String(v||"").replace(/[\s\-().]/g,"");if(!/^\+?\d+$/.test(d))return"";
   if(d[0]==="+")d=d.slice(1);if(d.indexOf("62")===0)d="0"+d.slice(2);
   return/^08\d{8,12}$/.test(d)?d:""}
+var SIGNBUSY=false,SIGNOK=0;
 async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").className="err";
   if(!$("em").value||!$("em").checkValidity()){$("aerr").textContent="Isi email dengan benar.";return}
   if($("pw").value.length<6){$("aerr").textContent="Kata sandi minimal 6 karakter.";return}
@@ -699,21 +700,32 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
   if(!hp){hot($("aerr"),"Isi Nomor HP dengan benar (contoh 081234567890) !!!");$("hp").focus();return}
   if(!$("jk").value){$("aerr").textContent="Pilih jenis kelamin.";return}
   if(!SIGNFOTO){hot($("aerr"),"Atur Foto Profil Dulu !!!");return}
+  if(SIGNBUSY)return;SIGNBUSY=true;var tb=$("signup");tb.disabled=true;var tl=$("signup").textContent;tb.textContent="Mendaftar…";
+  try{
   var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,display_name:nm,hp:hp,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
-  try{localStorage.setItem("foto-daftar",JSON.stringify({email:$("em").value.trim().toLowerCase(),foto:SIGNFOTO}))}catch(e){}
-  var em=$("em").value.trim(),perlu=!r.data.session;
-  if(!perlu){try{await sb.auth.signOut()}catch(e){}}
+  var em=$("em").value.trim(),foto=SIGNFOTO,uid=r.data.user&&r.data.user.id,perlu=!r.data.session;
+  try{localStorage.setItem("foto-daftar",JSON.stringify({email:em.toLowerCase(),foto:foto}))}catch(e){}
+  /* 1) form langsung kembali ke mode Masuk, apa pun yang terjadi sesudahnya */
   ["nama","hp","pw","pw2"].forEach(function(k){$(k).value=""});$("jk").value="";SIGNFOTO="";$("showpw").checked=false;$("pw").type="password";$("pw2").type="password";
-  setReg(false);$("em").value=em;
+  setReg(false);SIGNOK=Date.now();$("em").value=em;
   $("aerr").className="err ok";$("aerr").textContent=perlu?"Pendaftaran berhasil. Cek email untuk konfirmasi, lalu masuk di sini.":"Pendaftaran berhasil. Silakan masuk dengan email dan kata sandi kamu.";
-  $("pw").focus()}
+  /* 2) kalau akun langsung aktif, simpan foto + HP ke server SEKARANG selagi sesi masih ada, baru keluar */
+  if(!perlu&&uid){
+    var u=await sb.from("profil").upsert({user_id:uid,foto:foto,hp:hp});
+    if(u.error)u=await sb.from("profil").upsert({user_id:uid,foto:foto});
+    if(!u.error){try{localStorage.removeItem("foto-daftar")}catch(e){}}
+    try{await sb.auth.signOut()}catch(e){}
+    $("aerr").className="err ok";$("aerr").textContent="Pendaftaran berhasil. Silakan masuk dengan email dan kata sandi kamu."}
+  $("pw").focus()
+  }catch(e){$("aerr").className="err";$("aerr").textContent="Gagal daftar: "+(e&&e.message||"coba lagi")}
+  finally{SIGNOK=Date.now()*(regMode?0:1);SIGNBUSY=false;tb.disabled=false;tb.textContent=regMode?"Buat akun":"Daftar akun baru"}}
 $("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;
   if(regMode){doSignup();return}
   $("aerr").textContent="";
   var r=await sb.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
   if(r.error)$("aerr").textContent="Gagal masuk: "+r.error.message});
-$("signup").addEventListener("click",function(){if(!regMode){setReg(true);return}doSignup()});
+$("signup").addEventListener("click",function(){if(SIGNBUSY)return;if(!regMode){if(Date.now()-SIGNOK<4000)return;setReg(true);return}doSignup()});
 document.addEventListener("click",function(e){var c=e.target.closest("[data-copy]"),a=e.target.closest("[data-copyall]");
   if(c){salin(gLink(c.dataset.copy),c);return}
   if(a){salin(GRUP.map(function(g){return g[1]+": "+gLink(g[0])}).join("\n"),a)}});
@@ -754,8 +766,9 @@ async function loadProfil(user){var m=user.user_metadata||{};
   if(isAdmin&&hpOk)HPS[user.id]=hpOk;
   /* foto yang dipilih saat daftar (tersimpan di perangkat ini) dipasang otomatis setelah login pertama */
   try{var d=JSON.parse(localStorage.getItem("foto-daftar")||"null");
-    if(d&&d.foto&&(d.email||"")===(user.email||"").toLowerCase()){localStorage.removeItem("foto-daftar");
-      if(!PROF.foto){PROF.foto=d.foto;try{localStorage.setItem(fotoKey(),d.foto)}catch(e){}paintProf();sb.from("profil").upsert({user_id:user.id,foto:d.foto})}}}catch(e){}
+    if(d&&d.foto&&(d.email||"")===(user.email||"").toLowerCase()){
+      if(!PROF.foto){PROF.foto=d.foto;try{localStorage.setItem(fotoKey(),d.foto)}catch(e){}paintProf();sb.from("profil").upsert({user_id:user.id,foto:d.foto}).then(function(x){if(!x.error){try{localStorage.removeItem("foto-daftar")}catch(e){}}})}
+      else{try{localStorage.removeItem("foto-daftar")}catch(e){}}}}catch(e){}
   if(!PROF.nama||!PROF.jk||!normHp(PROF.hp)||!PROF.foto)openProf(true)}
 /* --- nama & jenis kelamin --- */
 function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("perr").className="err";$("perr").textContent="";
