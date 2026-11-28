@@ -998,14 +998,9 @@ function gaya(t,m){var C=String.fromCodePoint;return String(t).replace(/[A-Za-z0
   if(k>=48&&k<=57)return C(0x1D7EC+k-48);
   if(k<=90)return C((m==="s"?0x1D4D0:0x1D5D4)+k-65);
   return C((m==="s"?0x1D4EA:0x1D5EE)+k-97)})}
-/* Huruf blok mungil (2 baris, setengah blok; STNK dipecah 2 baris agar muat di HP) untuk judul WA: STNK / SIM, dibungkus ``` agar sejajar. */
-var ART={S:["█▀▀", "▄▄█"],
-T:["▀█▀", " █ "],
-N:["█▀▄", "█ █"],
-K:["█▄▀", "█▀▄"],
-I:["█", "█"],
-M:["█▄▄█", "█  █"]};
-function artTxt(w){var r=[],ps=w==="STNK"?["ST","NK"]:[w];ps.forEach(function(p){for(var i=0;i<2;i++)r.push(p.split("").map(function(c){return ART[c][i]}).join(" ").replace(/\s+$/,""))});return r.join("\n")}
+/* Huruf blok mungil (2 baris, setengah blok, satu baris lebar) untuk judul WA: STNK / SIM, dibungkus ``` agar sejajar. */
+var ART={S:["█▀","▄█"],T:["▀█▀"," █ "],N:["█▀▄","█ █"],K:["█▄▀","█▀▄"],I:["█","█"],M:["█▄▄█","█  █"]};
+function artTxt(w){var r=[],i;for(i=0;i<2;i++)r.push(w.split("").map(function(c){return ART[c][i]}).join(" ").replace(/\s+$/,""));return r.join("\n")}
 function waUrl(it){var h=hpOf(it);if(!h)return"";var i=info(it),p=PEM[it.id]||{},nm=p.nama?" `"+p.nama+"`":"",sisa;
   if(i.left>0)sisa="tinggal *"+i.left+" hari lagi* (dihitung dari hari ini, "+fmt(today())+")";
   else if(i.left===0)sisa="*jatuh tempo HARI INI* ("+fmt(today())+")";
