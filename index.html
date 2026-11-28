@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pengingat Agenda Penting</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pengingat HER STNK / SIM">
+<meta property="og:title" content="HER STNK / SIM - Pemberitahuan dari Admin">
+<meta property="og:description" content="Pengingat jatuh tempo HER STNK dan SIM. Jangan sampai terlewat.">
+<meta property="og:url" content="https://ayamkurin000-dot.github.io/reminder/">
+<meta property="og:image" content="https://ayamkurin000-dot.github.io/reminder/gambar/banner-her.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1d3557">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="logo/ikon-192.png">
@@ -938,7 +947,7 @@ function waUrl(it){var h=hpOf(it);if(!h)return"";var i=info(it),p=PEM[it.id]||{}
   if(i.left>0)sisa="tinggal *"+i.left+" hari lagi* (dihitung dari hari ini, "+fmt(today())+")";
   else if(i.left===0)sisa="*jatuh tempo HARI INI* ("+fmt(today())+")";
   else sisa="sudah *lewat "+(-i.left)+" hari* dari jatuh tempo (dihitung dari hari ini, "+fmt(today())+")";
-  var t="Halo"+nm+", ini pemberitahuan dari admin Pengingat HER.\n\n*"+it.name+"*\nJatuh tempo: *"+fmt(i.date)+"*\nSisa waktu: "+sisa+".\n\nMohon segera diurus ya. Terima kasih \ud83d\ude4f";
+  var t="*\ud83d\udccc HER STNK / SIM*\n*PEMBERITAHUAN DARI ADMIN*\n\nHalo"+nm+",\n\n*"+it.name+"*\nJatuh tempo: *"+fmt(i.date)+"*\nSisa waktu: "+sisa+".\n\nMohon segera diurus ya. Terima kasih \ud83d\ude4f\n\n"+"https://ayamkurin000-dot.github.io/reminder/";
   var no="62"+h.replace(/^0/,"");
   return(/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)?"https://wa.me/"+no+"?text=":"https://web.whatsapp.com/send?phone="+no+"&text=")+encodeURIComponent(t)}
 /* Admin: kartu dikelompokkan per akun pembuat agenda, tiap akun punya warna gradasi sendiri (tetap, dihitung dari emailnya). */
