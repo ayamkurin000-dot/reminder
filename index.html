@@ -478,6 +478,7 @@ form.tm input:focus,form.tm select:focus{outline:2px solid var(--cdue);outline-o
 <section id="auth" hidden>
 <h2>Login</h2>
 <form id="af">
+  <p class="meta" id="reg-grp" hidden style="margin:0 0 4px;font-weight:700"></p>
   <label>Email<input id="em" type="email" required autocomplete="email"></label>
   <label id="lbl-nama" hidden>Nama lengkap<input id="nama" type="text" maxlength="60" autocomplete="name" placeholder="Contoh: Ma'ruf Akbar"></label>
   <label id="lbl-hp" hidden>Nomor HP / WhatsApp (wajib)<input id="hp" type="tel" inputmode="tel" maxlength="16" autocomplete="tel" placeholder="Contoh: 081234567890"></label>
@@ -701,7 +702,7 @@ async function initDb(){
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
-function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-hp").hidden=!on;$("hp-note").hidden=!on;$("lbl-foto").hidden=!on;if(on)paintSf();$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").className="err";$("aerr").textContent="";if(on)$("em").focus()}
+function setReg(on){regMode=on;var rg=$("reg-grp"),gg=urlGrup();rg.hidden=!(on&&gg&&GN[gg]);rg.textContent=on&&gg&&GN[gg]?"👥 Kamu mendaftar ke kelompok: "+GN[gg]:"";$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-hp").hidden=!on;$("hp-note").hidden=!on;$("lbl-foto").hidden=!on;if(on)paintSf();$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").className="err";$("aerr").textContent="";if(on)$("em").focus()}
 $("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
 $("backlogin").addEventListener("click",function(){setReg(false)});
 function normHp(v){var d=String(v||"").replace(/[\s\-().]/g,"");if(!/^\+?\d+$/.test(d))return"";
@@ -960,7 +961,7 @@ $("tmodal").addEventListener("click",function(e){if(e.target===$("tmodal"))$("tm
 function profTema(){var el=$("prof");if(!el)return;var t=TEMA_LIST.some(function(x){return x[0]===TEMA.all})?TEMA.all:"";el.className="prof"+(t?" tm th-"+t:"");var f=$("f");if(f)f.className=t?"tm th-"+t:""}
 function render(){
   profTema();
-  $("today").textContent="Hari ini, "+fmt(today())+(defGrup()?" · "+GN[defGrup()]:"");
+  $("today").textContent="Hari ini, "+fmt(today())+(!isAdmin&&defGrup()?" · "+GN[defGrup()]:"");
   var rows=items.map(function(it){var i=info(it);return{it:it,i:i,mute:isAdmin&&isSenyap(it,i)}}).sort(function(a,b){return a.i.left-b.i.left});
   var al=rows.filter(function(r){return isAdmin?(r.i.left<ADMIN_HARI&&!r.mute):r.i.st!=="ok"});
   $("alerts").innerHTML=!items.length?kosongHtml("Agenda yang ditambahkan akan tampil di sini."):al.length?al.map(function(r,k){
