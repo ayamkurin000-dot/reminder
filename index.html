@@ -723,7 +723,7 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
   var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,display_name:nm,hp:hp,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
   var em=$("em").value.trim(),foto=SIGNFOTO,uid=r.data.user&&r.data.user.id,perlu=!r.data.session;
-  try{localStorage.setItem("foto-daftar",JSON.stringify({email:em.toLowerCase(),foto:foto}))}catch(e){}
+  try{localStorage.setItem("foto-daftar",JSON.stringify({email:em.toLowerCase(),foto:foto}));if(uid)localStorage.setItem("foto-"+uid,foto)}catch(e){}
   /* 1) form langsung kembali ke mode Masuk, apa pun yang terjadi sesudahnya */
   ["nama","hp","pw","pw2"].forEach(function(k){$(k).value=""});$("jk").value="";SIGNFOTO="";$("showpw").checked=false;$("pw").type="password";$("pw2").type="password";
   setReg(false);SIGNOK=Date.now();$("em").value=em;
@@ -734,7 +734,7 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
     if(u.error)u=await sb.from("profil").upsert({user_id:uid,foto:foto});
     if(!u.error){try{localStorage.removeItem("foto-daftar")}catch(e){}}
     try{await sb.auth.signOut()}catch(e){}
-    $("aerr").className="err ok";$("aerr").textContent="Pendaftaran berhasil. Silakan masuk dengan email dan kata sandi kamu."}
+    $("aerr").className="err ok";$("aerr").textContent="Pendaftaran berhasil. Silakan masuk dengan email dan kata sandi kamu."+(u.error?" (Foto belum tersimpan di server, akan dicoba lagi saat masuk di perangkat ini.)":"")}
   $("pw").focus()
   }catch(e){$("aerr").className="err";$("aerr").textContent="Gagal daftar: "+(e&&e.message||"coba lagi")}
   finally{SIGNOK=Date.now()*(regMode?0:1);SIGNBUSY=false;tb.disabled=false;tb.textContent=regMode?"Buat akun":"Daftar akun baru"}}
@@ -782,15 +782,18 @@ async function loadProfil(user){var m=user.user_metadata||{};
   paintProf();
   var r=await sb.from("profil").select("foto,hp").eq("user_id",user.id).maybeSingle(),adaHp=!r.error;
   if(r.error)r=await sb.from("profil").select("foto").eq("user_id",user.id).maybeSingle();
-  if(!r.error&&r.data&&r.data.foto){PROF.foto=r.data.foto;paintProf()}
+  var srvFoto=!r.error&&r.data&&r.data.foto;
+  if(srvFoto){PROF.foto=r.data.foto;paintProf()}
   /* nomor HP disalin ke tabel profil supaya admin bisa membacanya (data akun tidak bisa dibaca admin dari browser) */
   var hpOk=normHp(PROF.hp);if(adaHp&&hpOk&&(!r.data||r.data.hp!==hpOk)){sb.from("profil").upsert({user_id:user.id,hp:hpOk}).then(function(){})}
   if(isAdmin&&hpOk)HPS[user.id]=hpOk;
   /* foto yang dipilih saat daftar (tersimpan di perangkat ini) dipasang otomatis setelah login pertama */
-  try{var d=JSON.parse(localStorage.getItem("foto-daftar")||"null");
-    if(d&&d.foto&&(d.email||"")===(user.email||"").toLowerCase()){
-      if(!PROF.foto){PROF.foto=d.foto;try{localStorage.setItem(fotoKey(),d.foto)}catch(e){}paintProf();sb.from("profil").upsert({user_id:user.id,foto:d.foto}).then(function(x){if(!x.error){try{localStorage.removeItem("foto-daftar")}catch(e){}}})}
-      else{try{localStorage.removeItem("foto-daftar")}catch(e){}}}}catch(e){}
+  var d=null;try{d=JSON.parse(localStorage.getItem("foto-daftar")||"null")}catch(e){}
+  var dOk=!!(d&&d.foto&&(d.email||"")===(user.email||"").toLowerCase());
+  if(dOk&&!PROF.foto){PROF.foto=d.foto;try{localStorage.setItem(fotoKey(),d.foto)}catch(e){}paintProf()}
+  /* penyembuhan: foto ada di perangkat ini tetapi belum ada di server -> kirim ke server */
+  if(!srvFoto&&PROF.foto){sb.from("profil").upsert({user_id:user.id,foto:PROF.foto}).then(function(x){if(!x.error&&dOk){try{localStorage.removeItem("foto-daftar")}catch(e){}}})}
+  else if(dOk){try{localStorage.removeItem("foto-daftar")}catch(e){}}
   if(!PROF.nama||!PROF.jk||!normHp(PROF.hp)||!PROF.foto)openProf(true)}
 /* --- nama & jenis kelamin --- */
 function openProf(must){PMAND=!!must;$("pmodal").hidden=false;$("pcancel").hidden=PMAND;$("pkeluar").hidden=!PMAND;$("perr").className="err";$("perr").textContent="";
