@@ -271,6 +271,7 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 #auth .meta,#auth .sfoto .meta{color:#7fdcf0}
 #auth .err{margin:0;min-height:0;font:600 14px Rajdhani,sans-serif;color:#ff6b9d;text-shadow:0 0 8px rgba(255,47,214,.6)}
 #auth .err:empty{display:none}
+#auth .err.ok{color:#5dffb0;text-shadow:0 0 8px rgba(0,255,150,.5)}
 #auth .arow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:2px}
 #auth .arow #signup{margin-left:auto}
 #auth button{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 12px;font:700 12px Orbitron,Archivo,sans-serif;letter-spacing:1px;text-transform:uppercase;color:var(--c1);background:linear-gradient(rgba(0,229,255,.10),rgba(0,229,255,.10));border:1px solid var(--c1);border-radius:0;cursor:pointer;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:inset 0 0 12px rgba(0,229,255,.25);transition:transform .12s,background .2s,color .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
@@ -671,7 +672,7 @@ async function initDb(){
   var r=await sb.auth.getSession();if(!r.data.session){show(false);loadPublic()}}
 function hot(el,t){el.className="err";void el.offsetWidth;el.textContent=t;el.className="err hot"}
 var regMode=false;
-function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-hp").hidden=!on;$("hp-note").hidden=!on;$("lbl-foto").hidden=!on;if(on)paintSf();$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").textContent="";if(on)$("em").focus()}
+function setReg(on){regMode=on;$("lbl-nama").hidden=!on;$("lbl-jk").hidden=!on;$("lbl-hp").hidden=!on;$("hp-note").hidden=!on;$("lbl-foto").hidden=!on;if(on)paintSf();$("lbl-pw2").hidden=!on;$("pw2").required=on;$("pw2").value="";$("loginbtn").hidden=on;$("backlogin").hidden=!on;$("signup").textContent=on?"Buat akun":"Daftar akun baru";$("signup").className=on?"pri":"";$("pw").autocomplete=on?"new-password":"current-password";$("aerr").className="err";$("aerr").textContent="";if(on)$("em").focus()}
 $("showpw").addEventListener("change",function(){var t=this.checked?"text":"password";$("pw").type=t;$("pw2").type=t});
 $("backlogin").addEventListener("click",function(){setReg(false)});
 function normHp(v){var d=String(v||"").replace(/[\s\-().]/g,"");if(!/^\+?\d+$/.test(d))return"";
@@ -690,7 +691,12 @@ async function doSignup(){if(!sb)return;$("aerr").textContent="";$("aerr").class
   var r=await sb.auth.signUp({email:$("em").value,password:$("pw").value,options:{data:{grup:urlGrup(),nama:nm,display_name:nm,hp:hp,jk:$("jk").value}}});
   if(r.error){$("aerr").textContent="Gagal daftar: "+r.error.message;return}
   try{localStorage.setItem("foto-daftar",JSON.stringify({email:$("em").value.trim().toLowerCase(),foto:SIGNFOTO}))}catch(e){}
-  if(!r.data.session){$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk.";setReg(false);$("aerr").textContent="Akun dibuat. Cek email untuk konfirmasi, lalu masuk."}}
+  var em=$("em").value.trim(),perlu=!r.data.session;
+  if(!perlu){try{await sb.auth.signOut()}catch(e){}}
+  ["nama","hp","pw","pw2"].forEach(function(k){$(k).value=""});$("jk").value="";SIGNFOTO="";$("showpw").checked=false;$("pw").type="password";$("pw2").type="password";
+  setReg(false);$("em").value=em;
+  $("aerr").className="err ok";$("aerr").textContent=perlu?"Pendaftaran berhasil. Cek email untuk konfirmasi, lalu masuk di sini.":"Pendaftaran berhasil. Silakan masuk dengan email dan kata sandi kamu.";
+  $("pw").focus()}
 $("af").addEventListener("submit",async function(e){e.preventDefault();if(!sb)return;
   if(regMode){doSignup();return}
   $("aerr").textContent="";
