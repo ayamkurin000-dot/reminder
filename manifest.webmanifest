@@ -9,7 +9,7 @@
   "id": "./",
   "display": "standalone",
   "prefer_related_applications": false,
-  "related_applications": [{ "platform": "webapp", "url": "manifest.webmanifest" }],
+  "related_applications": [{ "platform": "webapp", "url": "https://ayamkurin000-dot.github.io/reminder/manifest.webmanifest" }],
   "orientation": "any",
   "background_color": "#f4f5f7",
   "theme_color": "#1d3557",

@@ -162,6 +162,13 @@ footer{color:var(--mute);font-size:13px;margin:26px 0 8px}
 @media (prefers-reduced-motion:reduce){.num.urg,.num.wig,.alert .blink{animation:none}}
 #inst{position:relative;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--navy);border-radius:12px;padding:14px 40px 14px 16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 #inst[hidden]{display:none}
+/* Notifikasi pasang: jendela wajib dijawab. Latar penuh layar menahan semua klik sampai user memilih. */
+#inst{position:fixed;z-index:300;inset:0;margin:auto;height:fit-content;width:min(92vw,440px);max-height:88vh;overflow:visible;padding:18px 18px 16px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+#inst::before{content:"";position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:-1;background:rgba(5,10,20,.72);backdrop-filter:blur(2px)}
+#inst{background:transparent!important;border:0!important;box-shadow:none!important}
+#inst::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--navy);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.55)}
+#inst .instx{display:none}
+body.inst-on{overflow:hidden}
 .insth{display:block;font-size:17px;margin-bottom:6px}
 .instl{margin:0 0 12px;padding-left:20px;font-size:15px}.instl li{margin:3px 0}
 .insta{display:flex;gap:8px;flex-wrap:wrap}
@@ -1078,15 +1085,26 @@ function instClose(){$("inst").hidden=true;try{sessionStorage.setItem("inst-tutu
 function tandaiTerpasang(){try{localStorage.setItem("app-terpasang","1")}catch(e){}$("inst").hidden=true}
 function sudahTerpasang(){try{return localStorage.getItem("app-terpasang")==="1"}catch(e){return false}}
 if(isApp)tandaiTerpasang();
-if(!isApp&&!sudahTerpasang()&&!instClosed())$("inst").hidden=false;
-if(!isApp&&navigator.getInstalledRelatedApps)navigator.getInstalledRelatedApps().then(function(a){if(a&&a.length)tandaiTerpasang()}).catch(function(){});
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e});
+var dpWait=null;
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(dpWait)dpWait()});
+/* Notifikasi pasang hanya tampil kalau aplikasi BELUM terpasang di perangkat ini:
+   - sudah dibuka sebagai aplikasi / pernah ditandai terpasang -> tidak tampil
+   - Chrome/Android: cek aplikasi terpasang; browser yang punya fitur pasang hanya menampilkan notifikasi kalau memang bisa dipasang (belum terpasang)
+   - browser lain (iPhone/Safari, Firefox): tampil sampai user menjawab */
+(async function(){
+  if(isApp||sudahTerpasang()||instClosed())return;
+  try{if(navigator.getInstalledRelatedApps){var a=await navigator.getInstalledRelatedApps();if(a&&a.length){tandaiTerpasang();return}}}catch(e){}
+  if("onbeforeinstallprompt" in window&&!isIos){
+    if(!dp)await new Promise(function(r){dpWait=r;setTimeout(r,3500)});
+    if(!dp)return}
+  if(!isApp&&!sudahTerpasang()&&!instClosed())$("inst").hidden=false})();
 $("instbtn").addEventListener("click",function(){
   if(dp){dp.prompt();dp.userChoice.then(function(c){if(c&&c.outcome==="accepted")tandaiTerpasang()},function(){});dp=null;return}
   var t=$("insttxt");t.hidden=false;
   t.textContent=isIos?"Di Safari, ketuk tombol Bagikan lalu pilih “Tambah ke Layar Utama”.":"Buka menu browser (titik tiga di pojok kanan atas), lalu pilih “Pasang aplikasi” atau “Tambahkan ke layar utama”."});
 $("instx").addEventListener("click",instClose);$("instlater").addEventListener("click",instClose);
 window.addEventListener("appinstalled",tandaiTerpasang);
+(function(){var el=$("inst");function sync(){document.body.classList.toggle("inst-on",!el.hidden)}sync();new MutationObserver(sync).observe(el,{attributes:true,attributeFilter:["hidden"]})})();
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))
   window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(function(){})});
 (function(){
